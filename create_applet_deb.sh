@@ -94,5 +94,9 @@ EOF
 dpkg-deb --build "$BUILD_DIR" "$DEB_NAME"
 echo "Package created successfully: $DEB_NAME"
 ls -lh "$DEB_NAME"
-sudo apt install ./$DEB_NAME
-killall kicker && sleep 2 && kicker
+
+# Optional install test (set INSTALL_AFTER_BUILD=1 or pass --install as 2nd arg)
+if [ "$INSTALL_AFTER_BUILD" = "1" ] || [ "$2" = "--install" ]; then
+    sudo apt install ./$DEB_NAME
+    killall kicker && sleep 2 && kicker
+fi
