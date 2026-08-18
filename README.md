@@ -1,4 +1,4 @@
-# TDE Kicker Menu Classic-X (Standalone Applet)
+# <img src="about.png" align="right" width="72" height="72" alt="Classic-X Logo"> TDE Kicker Menu Classic-X (Standalone Applet)
 
 A modern, high-performance redesign of the Trinity Desktop Environment (TDE) Classic Menu (KMenu), built as a **standalone Kicker panel applet plugin** (`classicxapplet.so`).
 
@@ -151,39 +151,55 @@ Access the settings dialog by right-clicking the applet handle or menu button an
 
 ## Build, Packaging & Installation
 
-Classic-X is distributed as a standalone Debian package that installs cleanly into Trinity's directory tree (`/opt/trinity/`).
+Classic-X can be built and distributed either as a standard Debian package (`.deb`) or as an automated, user-friendly Q4OS installer (`.qsi`).
 
 ### Prerequisites
 * TDE development headers: `tdebase-trinity-dev`, `tqca-trinity-dev`, `libtqt3-mt-dev`
 * Build tools: `cmake` (>= 3.0), `g++`, `make`, `dpkg-deb`
+* Optional (for `.qsi` installer generation): `q4os-devpack-base`
 
-### Building the Package
+### Building Packages
 
-Run the build script from the repository root:
-
+#### 1. Debian Package (`.deb`)
+Run the debian builder script from the repository root:
 ```bash
-./create_applet_deb.sh
+./create_applet_deb.sh [version]
 ```
-
 This automated script will:
-1. Run `convert_images.py` and `convert_profiles.py` to regenerate embedded assets.
+1. Run `convert_images.py` and `convert_profiles.py` to regenerate zero-relocation embedded assets.
 2. Configure CMake with optimal C++ flags and build `classicxapplet.so`.
 3. Strip the binary aggressively (`sstrip` / `strip`).
 4. Generate the `.deb` package (`tde-kicker-classicx-applet_<version>_amd64.deb`).
 
+#### 2. Q4OS Self-Extracting Installer (`.qsi`)
+To produce an all-in-one wizard installer for Q4OS with embedded graphics, HTML descriptions, and dependency checks:
+```bash
+./create_applet_qsi.sh [version]
+```
+This produces `setup_tde-kicker-classicx-applet_<version>.qsi` ready for direct graphical deployment.
+
 ### Installation & Activation
 
-1. Install the generated Debian package:
-   ```bash
-   sudo apt install ./tde-kicker-classicx-applet_*_amd64.deb
-   ```
+#### Method A: Q4OS Graphical Setup (`.qsi`)
+* Double-click on `setup_tde-kicker-classicx-applet_<version>.qsi` in the file manager, or run:
+  ```bash
+  appsetup2.exu setup_tde-kicker-classicx-applet_<version>.qsi
+  ```
+* Follow the step-by-step wizard to install the applet.
 
-2. Restart Kicker to reload plugins:
+#### Method B: Debian Package (`.deb`)
+* Install the generated `.deb` package directly:
+  ```bash
+  sudo apt install ./tde-kicker-classicx-applet_*_amd64.deb
+  ```
+
+#### Adding Classic-X to Kicker Panel
+1. Restart Kicker to reload plugins (if necessary):
    ```bash
    kicker --replace &
    ```
-
-3. Right-click the Kicker panel $\rightarrow$ **Add Applet to Panel...** $\rightarrow$ Select **Classic-X Menu**.
+2. Right-click an empty area of your Kicker panel $\rightarrow$ **Add Applet to Panel...** $\rightarrow$ Select **Classic-X Menu** $\rightarrow$ Click **Add to Panel**.
+3. Right-click the Classic-X Start button to open **Classic-X Settings** and select your preferred profile and theme.
 
 ---
 
@@ -200,7 +216,9 @@ This automated script will:
 | `src/applet/recentapps.cpp` | History manager (`RecentlyLaunchedApps`), `kickerrc` `RecentAppsStat` reader/writer |
 | `src/applet/classicxSettings.kcfg` | Configuration skeleton (`MenuEntryHeight`, `ShowRecentApps`, `NumRecentApps`, `SidebarHoverDelay`, etc.) |
 | `convert_profiles.py` | Generator for zero-relocation binary delta profile database (`classicx_builtin_profiles.h`) |
-| `create_applet_deb.sh` | Automated build and packaging script for Debian/TDE |
+| `create_applet_deb.sh` | Automated build and packaging script for Debian/TDE (`.deb`) |
+| `create_applet_qsi.sh` | Automated build and packaging script for Q4OS (`.qsi`) |
+| `qsi_setup/` | Templates, HTML pages, and visuals for the Q4OS graphical wizard |
 
 ### Load-Bearing TQt3 Framework Constraints
 
