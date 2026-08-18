@@ -1,0 +1,831 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kcfg xmlns="http://www.kde.org/standards/kcfg/1.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0
+      http://www.kde.org/standards/kcfg/1.0/kcfg.xsd" >
+
+<include>tdeapplication.h</include>
+<include>tdelocale.h</include>
+<kcfgfile name="classicxapplet_rc" />
+
+<group name="General">
+
+<entry name="SideBarWidth" type="Int" >
+      <label>Width of the sidebar in pixels</label>
+      <default>36</default>
+      <min>16</min>
+      <max>80</max>
+   </entry>
+
+<entry name="ShowControlCenter" type="Bool" >
+      <label>Show Trinity Control Center button on sidebar</label>
+      <default>true</default>
+   </entry>
+
+<entry name="ShowRunCommand" type="Bool" >
+      <label>Show Execute Command item in Kmenu</label>
+      <default>true</default>
+   </entry>
+
+<entry name="Locked" type="Bool" >
+      <label>When this option is enabled, the panels may not be moved and items cannot be removed or added</label>
+      <default>false</default>
+   </entry>
+
+<entry name="ConserveSpace" type="Bool" >
+      <label>Enable conserve space</label>
+      <default>true</default>
+   </entry>
+
+<entry name="Transparent" type="Bool" >
+      <label>Enable transparency</label>
+      <whatsthis>When this option is enabled, the panel will become pseudo-transparent</whatsthis>
+      <default>false</default>
+   </entry>
+
+<entry name="UseResizeHandle" type="Bool" >
+      <label>Enable resize handles</label>
+      <whatsthis>When this option is enabled, the panel will provide a resize handle on order to change its width via click-and-drag</whatsthis>
+      <default>false</default>
+   </entry>
+
+<entry name="ShowDeepButtons" type="Bool" >
+     <label>Make the task buttons push further into the screen when activated</label>
+     <default>false</default>
+   </entry>
+
+<entry name="MenubarPanelTransparent" type="Bool" >
+      <label>Enable transparency for menubar panel</label>
+      <whatsthis>When this option is enabled, the panel containing the menubar will become pseudo-transparent as well</whatsthis>
+      <default>false</default>
+   </entry>
+
+<entry name="MenubarPanelBlurred" type="Bool" >
+      <label>Enable blurring for menubar panel</label>
+      <whatsthis>When this option is enabled, the panel containing the menubar will blur pseudo-transparent image</whatsthis>
+      <default>false</default>
+   </entry>
+
+<entry name="UseBackgroundTheme" type="Bool" >
+      <label>Enable background image</label>
+      <whatsthis>When this option is enabled, the panel will display a tiled image as its background</whatsthis>
+      <default>true</default>
+   </entry>
+
+<entry name="ColorizeBackground" type="Bool" >
+      <label>Enable colourized background.</label>
+      <default>false</default>
+   </entry>
+
+<entry name="RotateBackground" type="Bool" >
+      <label>Rotate background</label>
+      <whatsthis>When this option is enabled, when the panel is placed on the side or top edges of the screen, the background image will be rotated to match the panel's orientation</whatsthis>
+      <default>true</default>
+   </entry>
+
+<entry name="BackgroundTheme" type="Path" >
+      <label>Background image</label>
+      <whatsthis>Here you can choose an image to be displayed on the panel. Press the 'browse' button to choose a theme using the file dialog. This option is only effective if 'Enable background image' is selected</whatsthis>
+      <default>wallpapers/default.png</default>
+   </entry>
+
+<entry name="TintValue" type="Int" >
+      <label>Controls the saturation level of the tint color used with transparent panels</label>
+      <default>33</default>
+      <min>0</min>
+      <max>100</max>
+   </entry>
+
+<entry name="TintColor" type="Color" >
+      <label>The tint color used to colorize transparent panels</label>
+      <default code="true">(TQApplication::palette().active().mid())</default>
+      <whatsthis>This option sets the color to use when tinting transparent panels</whatsthis>
+   </entry>
+
+<entry name="UnhideLocation" type="Int">
+      <label>Raise when the pointer touches the screen here</label>
+      <default>0</default>
+    </entry>
+
+<entry name="FadeOutAppletHandles" type="Bool">
+      <label>Fade out applet handles</label>
+      <default>true</default>
+      <whatsthis>Select this option to make applet handles only visible on mouse hover. Applet handles let you move, remove and configure applets.</whatsthis>
+   </entry>
+
+<entry name="HideAppletHandles" type="Bool">
+      <label>Hide applet handles</label>
+      <default>false</default>
+      <whatsthis>Select this option to always hide the applet handles. Beware this could disable moving, removing or configuring some applets.</whatsthis>
+   </entry>
+
+<entry name="ShowToolTips" type="Bool" >
+      <label>Show informational tooltips</label>
+      <default>true</default>
+   </entry>
+
+<entry name="ShowIconActivationEffect" type="Bool" >
+      <label>Show visual effect when panel icon is activated.</label>
+      <default>true</default>
+   </entry>
+
+<entry name="UntrustedApplets" type="StringList">
+      <label>A list of applets that have been loaded at runtime. In the case of a crash these applets will not be loaded at the next Kicker start, in case they caused the crash</label>
+   </entry>
+
+<entry name="UntrustedExtensions" type="StringList">
+      <label>A list of extensions that have been loaded at runtime. In the case of a crash these extensions will not be loaded at the next Kicker start, in case they caused the crash</label>
+   </entry>
+
+<entry name="LegacyKMenu" type="Bool" >
+      <label>When this option is enabled, the classic TDE Menu is used.</label>
+      <default>true</default>
+   </entry>
+
+<entry name="OpenOnHover" type="Bool" >
+      <label>When this option is enabled, the Kickoff Menu opens on mouse hover.</label>
+      <default>true</default>
+   </entry>
+
+<entry name="ScrollFlipView" type="Bool" >
+      <label>When this option is enabled, the Kickoff Menu application view switching will scroll.</label>
+      <default>true</default>
+   </entry>
+
+<entry name="KMenuWidth" type="Int">
+      <label>Preferred width of the KMenu</label>
+      <default>0</default>
+    </entry>
+
+<entry name="KMenuHeight" type="Int">
+      <label>Preferred width of the KMenu</label>
+      <default>0</default>
+    </entry>
+
+</group>
+
+<group name="menus">
+
+    <entry name="MenuEntryFormat" type="Enum" >
+        <choices>
+            <choice name="NameOnly">
+                <label>Show simple menu entries</label>
+            </choice>
+            <choice name="NameAndDescription">
+                <label>Show names first on detailed entries</label>
+            </choice>
+            <choice name="DescriptionOnly">
+                <label>Show only description for menu entries</label>
+            </choice>
+            <choice name="DescriptionAndName">
+                <label>Show detailed menu entries</label>
+            </choice>
+        </choices>
+        <default>DescriptionAndName</default>
+        <label>Formation of the menu entry text</label>
+    </entry>
+
+    <entry name="ShowAppIcons" type="Bool">
+      <label>Show application icons in menu entries</label>
+      <default>true</default>
+    </entry>
+
+<entry name="ShowMenuTitles" type="Bool" >
+      <label>Show section titles in Kmenu</label>
+      <default>false</default>
+   </entry>
+
+<entry name="ReduceMenuDepth" type="Bool" >
+      <label>Simplify menus with only a single item inside</label>
+      <default>false</default>
+   </entry>
+
+<entry name="MenuEntryHeight" type="Int" >
+      <label>Application icon size in the menu tree (0=classic 20px, -1=TDE Small, else pixels)</label>
+      <default>0</default>
+   </entry>
+
+<entry name="ShowHiddenFiles" type="Bool" >
+      <label>Show hidden files in Quick Browser</label>
+      <default>false</default>
+   </entry>
+
+<entry name="ShowOpenInTerminal" type="Bool" >
+      <label>Show Open in Terminal entry in Quick Browser</label>
+      <default>true</default>
+   </entry>
+
+<entry name="MaxEntries2" type="UInt" >
+      <label>Maximum number of entries</label>
+      <default>30</default>
+      <min>1</min>
+   </entry>
+
+<entry name="UseBookmarks" type="Bool" >
+      <label>Show bookmarks in KMenu</label>
+      <default>false</default>
+   </entry>
+
+<entry name="UseBrowser" type="Bool" >
+      <label>Use the Quick Browser</label>
+      <default>false</default>
+   </entry>
+
+<entry name="MenuExtensions" key="Extensions" type="StringList" >
+      <label>Optional Menus</label>
+      <default>prefmenu.desktop</default>
+   </entry>
+
+<entry name="RecentAppsStat" type="StringList" >
+      <label>Recently used applications</label>
+   </entry>
+
+<entry name="NumVisibleEntries" type="UInt" >
+      <label>Number of visible entries</label>
+      <default>5</default>
+      <max>100</max>
+   </entry>
+
+<entry name="RecentVsOften" type="Bool" >
+      <label>Show most recently used applications rather than most frequently used</label>
+      <default>false</default>
+   </entry>
+
+<entry name="Favorites" type="StringList">
+      <label>The menu entries shown in the Favorites tab</label>
+   </entry>
+
+<entry name="FirstRun" type="Bool" >
+      <label>Whether the panel has been started before or not</label>
+      <default>false</default>
+   </entry>
+
+<entry name="FirstSeenApps" type="StringList">
+      <label>When the applications were first seen by Kickoff</label>
+   </entry>
+
+</group>
+
+<group name="button_tiles">
+
+<entry name="EnableKMenuTiles" type="Bool">
+      <label>Enable a tile background image for the KMenu button</label>
+      <default>false</default>
+   </entry>
+
+<entry name="EnableDesktopButtonTiles" type="Bool">
+      <label>Enable a tile background image for the Desktop button</label>
+      <default>false</default>
+   </entry>
+
+<entry name="EnableURLTiles" type="Bool" >
+      <label>Enable a tile background image for Application, URL and special buttons</label>
+      <default>false</default>
+   </entry>
+
+<entry name="EnableBrowserTiles" type="Bool" >
+      <label>Enable a tile background image for the Quick Browser button</label>
+      <default>false</default>
+   </entry>
+
+<entry name="EnableWindowListTiles" type="Bool" >
+      <label>Enable a tile background image for the Window List button</label>
+      <default>false</default>
+   </entry>
+
+<entry name="KMenuTile" type="Path" >
+      <label>Image tile for Kmenu button background</label>
+   </entry>
+
+<entry name="KMenuTileColor" type="Color" >
+      <label>Color to use for Kmenu button background</label>
+      <default code="true">TQColor()</default>
+   </entry>
+
+<entry name="DesktopButtonTile" type="Path" >
+      <label>Image tile for Desktop button background</label>
+   </entry>
+
+<entry name="DesktopButtonTileColor" type="Color" >
+      <label>Color to use for Kmenu button background</label>
+      <default code="true">TQColor()</default>
+   </entry>
+
+<entry name="URLTile" type="Path" >
+      <label>Image tile for Application, URL and special button backgrounds</label>
+   </entry>
+
+<entry name="URLTileColor" type="Color" >
+      <label>Color to use for Application, URL and special button backgrounds</label>
+      <default code="true">TQColor()</default>
+   </entry>
+
+<entry name="BrowserTile" type="Path" >
+      <label>Image tile for Browser button background</label>
+   </entry>
+
+<entry name="BrowserTileColor" type="Color" >
+      <label>Color to use for Browser button background</label>
+      <default code="true">TQColor()</default>
+   </entry>
+
+<entry name="WindowListTile" type="Path" >
+      <label>Image tile for Window List button background</label>
+   </entry>
+
+<entry name="WindowListTileColor" type="Color" >
+      <label>Color to use for Window List button background</label>
+      <default code="true">TQColor()</default>
+   </entry>
+
+</group>
+
+<group name="KMenu" >
+
+   <entry name="ClassicKMenuOpacity" type="Int" >
+      <label>TDE Menu Opacity</label>
+      <default>100</default>
+      <min>0</min>
+      <max>100</max>
+      <whatsthis>Controls the level of pseudo-transparency applied to the TDE menu.</whatsthis>
+   </entry>
+
+   <entry name="ClassicKMenuBackgroundColor" type="Color" >
+      <label>TDE Menu Background Color</label>
+      <default code="true">TDEGlobalSettings::buttonBackground()</default>
+      <whatsthis>Controls the background color applied to the TDE menu.</whatsthis>
+   </entry>
+   <entry name="UseSidePixmap" type="Bool" >
+      <label>Use side image in Kmenu</label>
+      <default>true</default>
+   </entry>
+   <entry name="SidebarHoverMenu" type="Bool" >
+      <label>Open sidebar menus on hover (User / Shutdown)</label>
+      <default>false</default>
+   </entry>
+   <entry name="SidebarHoverDelay" type="Int" >
+      <label>Delay in milliseconds before opening sidebar menus on hover (User / Shutdown)</label>
+      <default>250</default>
+      <min>100</min>
+      <max>1000</max>
+   </entry>
+
+   <entry name="FullUserShutdownMenuHeight" type="Bool" >
+      <label>User and Shutdown menus use full menu height</label>
+      <default>true</default>
+   </entry>
+   <entry name="CustomUserShutdownMenuHeight" type="Int" >
+      <label>Custom height for User and Shutdown menus in pixels</label>
+      <default>350</default>
+      <min>250</min>
+      <max>2000</max>
+   </entry>
+
+   <entry name="SidebarButtonsAlign" type="Enum" >
+       <choices>
+           <choice name="Center">
+               <label>Center buttons alignment</label>
+           </choice>
+           <choice name="Left">
+               <label>Left buttons alignment</label>
+           </choice>
+           <choice name="Right">
+               <label>Right buttons alignment</label>
+           </choice>
+       </choices>
+       <default>Center</default>
+       <label>Sidebar root buttons icon alignment</label>
+   </entry>
+
+    <entry name="SidebarPictureExtendEdges" type="Bool" >
+        <label>Extend edge pixels of sidebar picture to fill remaining height</label>
+        <default>false</default>
+    </entry>
+
+    <entry name="TopPicMode" type="Enum" >
+        <choices>
+            <choice name="None">
+                <label>No top picture</label>
+            </choice>
+            <choice name="Embedded">
+                <label>Embedded top picture theme</label>
+            </choice>
+            <choice name="Custom">
+                <label>Custom 3-part top picture</label>
+            </choice>
+        </choices>
+        <default>None</default>
+        <label>Top picture mode</label>
+    </entry>
+
+    <entry name="TopPicEmbedded" type="String" >
+        <label>Embedded top picture theme name</label>
+        <default>Royal</default>
+    </entry>
+
+    <entry name="TopPicCustomLeft" type="String" >
+        <label>Custom top picture left file path</label>
+        <default></default>
+    </entry>
+
+    <entry name="TopPicCustomCenter" type="String" >
+        <label>Custom top picture center file path</label>
+        <default></default>
+    </entry>
+
+    <entry name="TopPicCustomRight" type="String" >
+        <label>Custom top picture right file path</label>
+        <default></default>
+    </entry>
+
+    <entry name="TopPicColorize" type="Bool" >
+        <label>Colorize top picture</label>
+        <default>false</default>
+    </entry>
+
+    <entry name="TopPicColor" type="Color" >
+        <label>Color used to colorize top picture</label>
+        <default code="true">TDEGlobalSettings::highlightColor()</default>
+    </entry>
+
+    <entry name="TopPicShowText" type="Bool" >
+        <label>Show text on top picture</label>
+        <default>false</default>
+    </entry>
+
+    <entry name="TopPicShowUser" type="Bool" >
+        <label>Show user name portion on top picture</label>
+        <default>false</default>
+    </entry>
+
+    <entry name="TopPicShowCustomText" type="Bool" >
+        <label>Show custom text portion on top picture</label>
+        <default>true</default>
+    </entry>
+
+    <entry name="TopPicText" type="String" >
+        <label>Text to display on top picture</label>
+        <default>Trinity Desktop</default>
+    </entry>
+
+    <entry name="TopPicTextColorMode" type="Int" >
+        <label>Text color mode for top picture (0 = TDE, 1 = Title text color, 2 = Custom)</label>
+        <default>0</default>
+    </entry>
+
+    <entry name="TopPicTextColor" type="Color" >
+        <label>Custom text color on top picture</label>
+        <default code="true">TQColor()</default>
+    </entry>
+
+    <entry name="TopPicShowDate" type="Bool" >
+        <label>Show date portion on top picture</label>
+        <default>false</default>
+    </entry>
+
+    <entry name="TopPicShowTime" type="Bool" >
+        <label>Show time portion on top picture</label>
+        <default>false</default>
+    </entry>
+
+   <entry name="ShowSidebarUserMenu" type="Bool" >
+      <label>Show User Menu button on sidebar</label>
+      <default>true</default>
+   </entry>
+
+   <entry name="ShowSidebarShutdownMenu" type="Bool" >
+      <label>Show Shutdown Menu button on sidebar</label>
+      <default>true</default>
+   </entry>
+
+   <entry name="ShowSpecialUserMenu" type="Bool" >
+      <label>Show User Menu in main menu tree</label>
+      <default>true</default>
+   </entry>
+
+   <entry name="ShowSpecialShutdownMenu" type="Bool" >
+      <label>Show Shutdown Menu in main menu tree</label>
+      <default>true</default>
+   </entry>
+
+   <entry name="ShowSidebarSettings" type="Bool" >
+      <label>Show Settings button on sidebar</label>
+      <default>true</default>
+   </entry>
+
+   <entry name="ShowSidebarDocuments" type="Bool" >
+      <label>Show Documents button on sidebar</label>
+      <default>true</default>
+   </entry>
+
+   <entry name="ShowSidebarImages" type="Bool" >
+      <label>Show Images button on sidebar</label>
+      <default>true</default>
+   </entry>
+
+   <entry name="ShowShutdownPowerOff" type="Bool" >
+      <label>Show Shut down in Shutdown menu</label>
+      <default>true</default>
+   </entry>
+
+   <entry name="ShowShutdownReboot" type="Bool" >
+      <label>Show Reboot in Shutdown menu</label>
+      <default>true</default>
+   </entry>
+
+   <entry name="ShowShutdownSuspend" type="Bool" >
+      <label>Show Suspend in Shutdown menu</label>
+      <default>true</default>
+   </entry>
+
+   <entry name="ShowShutdownHybridSuspend" type="Bool" >
+      <label>Show Hybrid suspend in Shutdown menu</label>
+      <default>true</default>
+   </entry>
+
+   <entry name="ShowShutdownHibernate" type="Bool" >
+      <label>Show Hibernate in Shutdown menu</label>
+      <default>true</default>
+   </entry>
+
+   <entry name="ShowRecentApps" type="Bool" >
+      <label>Display recent applications in KMenu</label>
+      <default>true</default>
+   </entry>
+
+   <entry name="NumRecentApps" type="Int" >
+      <label>Number of recent applications to display</label>
+      <default>5</default>
+      <min>2</min>
+      <max>6</max>
+   </entry>
+
+   <entry name="NumMostUsedApps" type="Int" >
+      <label>Number of most used applications to display (kept in sync with NumRecentApps)</label>
+      <default>5</default>
+      <min>2</min>
+      <max>6</max>
+   </entry>
+
+   <entry name="UseTooltip" type="Bool" >
+      <label>Use Tooltip in Kmenu</label>
+      <default>false</default>
+   </entry>
+
+   <entry name="UiIconSize" type="Int" >
+      <label>Display size of embedded UI icons in pixels</label>
+      <default>20</default>
+      <min>20</min>
+      <max>78</max>
+   </entry>
+
+   <entry name="UseSearchBar" type="Bool" >
+      <label>Show searh field in Kmenu</label>
+      <default>true</default>
+   </entry>
+
+   <entry name="AlwaysShowSearchBar" type="Bool" >
+      <label>Always show search bar in main menu</label>
+      <default>false</default>
+   </entry>
+
+   <entry name="UseTopSide" type="Bool" >
+      <label>Use side image on top of Kmenu</label>
+      <default>false</default>
+   </entry>
+
+   <entry name="LeftSideTopPixmapName" key="LeftSideTopName" type="String" >
+      <label>The name of the file to use as the side image in the TDE Menu</label>
+      <default>kside_top_left.png</default>
+   </entry>
+
+   <entry name="RightSideTopPixmapName" key="RightSideTopName" type="String" >
+      <label>The name of the file to use as the side image in the TDE Menu</label>
+      <default>kside_top_right.png</default>
+   </entry>
+
+   <entry name="SideTopTileName" key="SideTopTileName" type="String" >
+      <label>The name of the file used as a tile to fill the height of TDE Menu that SidePixmapName does not cover</label>
+      <default>kside_top_tile.png</default>
+   </entry>
+
+   <entry name="SidePixmapName" key="SideName" type="String" >
+      <label>The name of the file to use as the side image in the TDE Menu</label>
+      <default>kside.png</default>
+   </entry>
+
+   <entry name="SideTileName" key="SideTileName" type="String" >
+      <label>The name of the file used as a tile to fill the height of TDE Menu that SidePixmapName does not cover</label>
+      <default>kside_tile.png</default>
+   </entry>
+
+   <entry name="ShowKMenuText" key="ShowText" type="Bool" >
+      <label>Show text on the TDE Menu button</label>
+      <default>false</default>
+   </entry>
+
+   <entry name="KMenuText" key="Text" type="String" >
+      <label>Text to be shown on TDE Menu Button</label>
+      <default code="true">i18n("Applications")</default>
+   </entry>
+
+   <entry name="CustomKMenuIcon" key="CustomIcon" type="Path" >
+      <label>Custom TDE Menu Button Icon</label>
+      <default code="true">TQString("kmenu")</default>
+   </entry>
+
+   <entry name="SearchShortcut" type="String" >
+     <label>Search shortcut</label>
+     <default>/</default>
+   </entry>
+
+</group>
+
+<group name="buttons" >
+
+<entry name="ShowMouseOverEffects" key="EnableIconZoom" type="Bool" >
+      <label>Enable icon mouse over effects</label>
+      <default>true</default>
+   </entry>
+
+<entry name="MouseOversShowIcon" type="Bool" >
+      <label>Show icons in mouse over effects</label>
+      <default>true</default>
+   </entry>
+
+<entry name="MouseOversShowText" type="Bool" >
+      <label>Show text in mouse over effects</label>
+      <default>true</default>
+   </entry>
+
+<entry name="MouseOversSpeed" type="Int" >
+      <label>Controls how fast the tooltips fade in, measured in thousandths of a second</label>
+      <default>500</default>
+      <min>0</min>
+   </entry>
+
+   <entry name="MouseOversShowDelay" type="UInt" >
+       <label>Mouse over effects are shown after the defined time (in milliseconds)</label>
+       <default>500</default>
+   </entry>
+
+   <entry name="MouseOversHideDelay" type="UInt" >
+       <label>Mouse over effects are hidden after the defined time (in milliseconds)</label>
+       <default>200</default>
+   </entry>
+
+<entry name="EnableTileBackground" type="Bool" >
+      <label>Enable background tiles</label>
+      <default>false</default>
+   </entry>
+
+<entry name="IconMargin" key="IconMargin" type="Int" >
+      <label>The margin between panel icons and the panel border</label>
+      <default>3</default>
+   </entry>
+
+<entry name="MaximumTDEMenuButtonHeight" key="MaximumTDEMenuButtonHeight" type="Int" >
+      <label>The maximum height of the TDE Menu button in pixels</label>
+      <default>30</default>
+   </entry>
+
+<entry name="RemoveButtonsWhenBroken" type="Bool" >
+      <label>Buttons that represent KServices (applications, primarily) watch for the removal of the service and delete themselves when this happens. This setting turns this off.</label>
+      <default>true</default>
+   </entry>
+
+<entry name="ButtonFont" key="Font" type="Font" >
+      <label>Font for the buttons with text.</label>
+      <default code="true">TDEGlobalSettings::generalFont()</default>
+   </entry>
+
+<entry name="ButtonTextColor" key="TextColor" type="Color" >
+      <label>Text color for the buttons.</label>
+      <default code="true">TDEGlobalSettings::textColor()</default>
+   </entry>
+
+</group>
+
+  <group name="SearchField">
+    <entry key="History" type="PathList">
+      <default></default>
+      <label></label>
+      <whatsthis></whatsthis>
+    </entry>
+    <entry key="HistoryLength" type="Int">
+      <default>50</default>
+      <label></label>
+      <whatsthis></whatsthis>
+    </entry>
+    <entry key="CompletionItems" type="PathList">
+      <default></default>
+      <label></label>
+      <whatsthis></whatsthis>
+    </entry>
+    <entry key="CompletionMode" type="Int">
+      <default>2</default>
+      <label></label>
+      <whatsthis></whatsthis>
+    </entry>
+    <entry name="MaxSearchResults" type="Int">
+      <default>10</default>
+      <min>1</min>
+      <max>30</max>
+      <label>Maximum search results to display</label>
+    </entry>
+  </group>
+
+  <group name="Button">
+    <entry name="IconType" type="Int">
+      <default>0</default>
+    </entry>
+    <entry name="EmbeddedIcon" type="String">
+      <default>TDE</default>
+    </entry>
+    <entry name="CustomIconPath" type="String">
+      <default></default>
+    </entry>
+    <entry name="FullScaleStartIcon" type="Bool">
+      <default>false</default>
+    </entry>
+    <entry name="InvertStartIcon" type="Bool">
+      <default>false</default>
+    </entry>
+    <entry name="ColorizeStartIcon" type="Bool">
+      <default>false</default>
+    </entry>
+    <entry name="StartIconColor" type="Color">
+      <default code="true">TQColor(0, 0, 0)</default>
+    </entry>
+  </group>
+
+  <group name="UIIcons">
+    <entry name="InvertUiIcons" type="Bool">
+      <default>false</default>
+    </entry>
+    <entry name="ColorizeUiIcons" type="Bool">
+      <default>false</default>
+    </entry>
+    <entry name="UiIconColor" type="Color">
+      <default code="true">TQColor(0, 0, 0)</default>
+    </entry>
+    <entry name="ShutdownIconType" type="Int">
+      <label>0=Win, 1=Custom, 2=KDE</label>
+      <default>0</default>
+    </entry>
+    <entry name="ShutdownCustomIconPath" type="String">
+      <default></default>
+    </entry>
+    <entry name="StandbyIconType" type="Int">
+      <default>0</default>
+    </entry>
+    <entry name="StandbyCustomIconPath" type="String">
+      <default></default>
+    </entry>
+    <entry name="LogoutIconType" type="Int">
+      <default>0</default>
+    </entry>
+    <entry name="LogoutCustomIconPath" type="String">
+      <default></default>
+    </entry>
+    <entry name="RestartIconType" type="Int">
+      <default>0</default>
+    </entry>
+    <entry name="RestartCustomIconPath" type="String">
+      <default></default>
+    </entry>
+    <entry name="HibernateIconType" type="Int">
+      <default>0</default>
+    </entry>
+    <entry name="HibernateCustomIconPath" type="String">
+      <default></default>
+    </entry>
+    <entry name="HybridSleepIconType" type="Int">
+      <default>0</default>
+    </entry>
+    <entry name="HybridSleepCustomIconPath" type="String">
+      <default></default>
+    </entry>
+    <entry name="DocumentsIconType" type="Int">
+      <default>0</default>
+    </entry>
+    <entry name="DocumentsCustomIconPath" type="String">
+      <default></default>
+    </entry>
+    <entry name="ImagesIconType" type="Int">
+      <default>0</default>
+    </entry>
+    <entry name="ImagesCustomIconPath" type="String">
+      <default></default>
+    </entry>
+    <entry name="SettingsIconType" type="Int">
+      <default>0</default>
+    </entry>
+    <entry name="SettingsCustomIconPath" type="String">
+      <default></default>
+    </entry>
+  </group>
+
+</kcfg>
+
+

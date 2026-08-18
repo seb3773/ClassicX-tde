@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Classic-X Menu
+Name[fr]=Menu Classic-X
+Comment=Classic Menu Replacement with Instant Search
+Comment[fr]=Remplacement du menu classique avec recherche instantanée
+Icon=classicxapplet
+X-TDE-Library=classicxapplet
+X-TDE-UniqueApplet=false
+X-TDE-AppletLocation=panel

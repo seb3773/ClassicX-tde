@@ -1,0 +1,7 @@
+File=classicxSettings.kcfg
+Singleton=true
+ClassName=ClassicXSettings
+Mutators=true
+IncludeFiles=tqapplication.h
+GlobalEnums=true
+MemberVariables=dpointer
