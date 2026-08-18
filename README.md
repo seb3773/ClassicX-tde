@@ -242,7 +242,16 @@ TQt3 `TQPopupMenu` and `TQIconSet` have specific internal constraints that must 
 
 ## Screenshots
 
-![good old classic menu](screenshots/screenshot_kicker_menu_classic-x_A.jpg)  
-![instant search](screenshots/screenshot_kicker_menu_classic-x_B.jpg)  
-![configurable](screenshots/screenshot_kicker_menu_classic-x_C.jpg)  
-![sidebar buttons](screenshots/screenshot_kicker_menu_classic-x_D.jpg)  
+| | | |
+| :---: | :---: | :---: |
+| <a href="screenshots/ksnapshotEntCrj.png"><img src="screenshots/ksnapshotEntCrj.png" width="230" alt="screenshot 1"></a> | <a href="screenshots/ksnapshotw7NiVO.png"><img src="screenshots/ksnapshotw7NiVO.png" width="230" alt="screenshot 2"></a> | <a href="screenshots/ksnapshot43I6hS.png"><img src="screenshots/ksnapshot43I6hS.png" width="230" alt="screenshot 3"></a> |
+| <a href="screenshots/ksnapshotR4BuuU.png"><img src="screenshots/ksnapshotR4BuuU.png" width="230" alt="screenshot 4"></a> | <a href="screenshots/ksnapshotOXWlfJ.png"><img src="screenshots/ksnapshotOXWlfJ.png" width="230" alt="screenshot 5"></a> | <a href="screenshots/ksnapshotbOUzrD.png"><img src="screenshots/ksnapshotbOUzrD.png" width="230" alt="screenshot 6"></a> |
+| <a href="screenshots/ksnapshotTdZxt6.png"><img src="screenshots/ksnapshotTdZxt6.png" width="230" alt="screenshot 7"></a> | <a href="screenshots/ksnapshot7cSo16.png"><img src="screenshots/ksnapshot7cSo16.png" width="230" alt="screenshot 8"></a> | <a href="screenshots/ksnapshotUzi77S.png"><img src="screenshots/ksnapshotUzi77S.png" width="230" alt="screenshot 9"></a> |
+| <a href="screenshots/ksnapshotMgXKS8.png"><img src="screenshots/ksnapshotMgXKS8.png" width="230" alt="screenshot 10"></a> | <a href="screenshots/ksnapshotwehOuH.png"><img src="screenshots/ksnapshotwehOuH.png" width="230" alt="screenshot 11"></a> | <a href="screenshots/ksnapshotnPwtWT.png"><img src="screenshots/ksnapshotnPwtWT.png" width="230" alt="screenshot 12"></a> |
+| <a href="screenshots/ksnapshotN5Ob9R.png"><img src="screenshots/ksnapshotN5Ob9R.png" width="230" alt="screenshot 13"></a> | <a href="screenshots/ksnapshotd651yo.png"><img src="screenshots/ksnapshotd651yo.png" width="230" alt="screenshot 14"></a> | <a href="screenshots/ksnapshotEMwanS.png"><img src="screenshots/ksnapshotEMwanS.png" width="230" alt="screenshot 15"></a> |
+| <a href="screenshots/ksnapshotYt0tkW.png"><img src="screenshots/ksnapshotYt0tkW.png" width="230" alt="screenshot 16"></a> | <a href="screenshots/ksnapshotHuatNE.png"><img src="screenshots/ksnapshotHuatNE.png" width="230" alt="screenshot 17"></a> | <a href="screenshots/ksnapshotqOJTWi.png"><img src="screenshots/ksnapshotqOJTWi.png" width="230" alt="screenshot 18"></a> |
+| <a href="screenshots/ksnapshotsVjjB2.png"><img src="screenshots/ksnapshotsVjjB2.png" width="230" alt="screenshot 19"></a> | <a href="screenshots/ksnapshotKd1Ksi.png"><img src="screenshots/ksnapshotKd1Ksi.png" width="230" alt="screenshot 20"></a> | <a href="screenshots/ksnapshotfM3B4x.png"><img src="screenshots/ksnapshotfM3B4x.png" width="230" alt="screenshot 21"></a> |
+| <a href="screenshots/ksnapshotQfdrxg.png"><img src="screenshots/ksnapshotQfdrxg.png" width="230" alt="screenshot 22"></a> | <a href="screenshots/ksnapshotX0R94R.png"><img src="screenshots/ksnapshotX0R94R.png" width="230" alt="screenshot 23"></a> | <a href="screenshots/ksnapshotMhKNVC.png"><img src="screenshots/ksnapshotMhKNVC.png" width="230" alt="screenshot 24"></a> |
+| <a href="screenshots/ksnapshotyHXt4A.png"><img src="screenshots/ksnapshotyHXt4A.png" width="230" alt="screenshot 25"></a> | <a href="screenshots/ksnapshotXnmddV.png"><img src="screenshots/ksnapshotXnmddV.png" width="230" alt="screenshot 26"></a> | <a href="screenshots/ksnapshotsO4OUQ.png"><img src="screenshots/ksnapshotsO4OUQ.png" width="230" alt="screenshot 27"></a> |
+| <a href="screenshots/settings_panel.jpg"><img src="screenshots/settings_panel.jpg" width="230" alt="screenshot 28"></a> | <a href="screenshots/start_menu_embedded.jpg"><img src="screenshots/start_menu_embedded.jpg" width="230" alt="screenshot 29"></a> |   |
+  
