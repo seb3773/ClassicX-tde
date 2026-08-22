@@ -16,6 +16,7 @@
 #include "k_mnu_stub.h"
 #include "global.h"
 #include "kickertip.h"
+#include "classicxSettings.h"
 
 static MenuManager* findKickerMenuManager()
 {
@@ -60,14 +61,22 @@ ClassicXButton::~ClassicXButton()
     }
 }
 
+void ClassicXButton::showMenu()
+{
+    ClassicXApplet *applet = dynamic_cast<ClassicXApplet*>(parent());
+    if (applet) {
+        applet->showMenu();
+    } else {
+        realShowMenu();
+    }
+}
+
 void ClassicXButton::mousePressEvent(TQMouseEvent *e)
 {
     if (e->button() == Qt::LeftButton) {
-        ClassicXApplet *applet = dynamic_cast<ClassicXApplet*>(parent());
-        if (applet) {
-            applet->showMenu();
-            return;
-        }
+        e->accept();
+        showMenu();
+        return;
     } else if (e->button() == Qt::RightButton) {
         e->accept();
 
@@ -91,6 +100,15 @@ void ClassicXButton::mousePressEvent(TQMouseEvent *e)
         return;
     }
     PanelPopupButton::mousePressEvent(e);
+}
+
+void ClassicXButton::mouseReleaseEvent(TQMouseEvent *e)
+{
+    if (e->button() == Qt::LeftButton) {
+        e->accept();
+        return;
+    }
+    PanelPopupButton::mouseReleaseEvent(e);
 }
 
 void ClassicXButton::slotConfigure()
@@ -213,10 +231,17 @@ int ClassicXApplet::heightForWidth(int width) const
 
 void ClassicXApplet::showMenu()
 {
-    if (!m_button)
+    if (!m_button || !m_menu)
         return;
 
-    if (m_menu && !m_menu->initialized()) {
+    // Toggle close if menu is already showing
+    if (m_menu->isVisible()) {
+        m_menu->hide();
+        m_button->setDown(false);
+        return;
+    }
+
+    if (!m_menu->initialized()) {
         m_menu->initialize();
         m_menu->adjustSize();
     }
@@ -224,7 +249,8 @@ void ClassicXApplet::showMenu()
     m_button->setPopupDirection(popupDirection());
     m_button->setOrientation(orientation());
     m_button->setDrawArrow(true);
-    m_button->showMenu();
+
+    m_button->realShowMenu();
 }
 
 void ClassicXApplet::positionChange(Position p)

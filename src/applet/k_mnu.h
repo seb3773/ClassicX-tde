@@ -77,6 +77,7 @@ public:
     virtual void showMenu();
     virtual bool inFlatSearchMode() const { return m_inFlatSearchMode; }
     void clearRecentMenuItems();
+    TQPixmap renderMenuSnapshot();
 
 public slots:
     void slotContextMenu(int);
@@ -135,6 +136,7 @@ protected:
     virtual void hideEvent(TQHideEvent *);
     virtual void showEvent(TQShowEvent *);
     void paintEvent(TQPaintEvent *);
+    void drawMenu(TQPainter *p, const TQRect &clipRect);
     void mousePressEvent(TQMouseEvent *);
     void mouseReleaseEvent(TQMouseEvent *);
     void mouseMoveEvent(TQMouseEvent *);
@@ -251,6 +253,14 @@ protected:
 
 protected slots:
     void slotClosePopupTimeout();
+    void slotOpeningAnimStep();
+
+private:
+    bool     m_inOpeningAnim;
+    int      m_openingAnimStep;
+    int      m_totalOpeningAnimSteps;
+    int      m_openingAnimDistance;
+    TQTimer *m_openingAnimTimer;
 };
 
 #endif

@@ -125,6 +125,7 @@ private:
     TQSpinBox*  m_spinMaxSearchResults;
     TQComboBox* m_cmbMenuEntryFormat;
     TQCheckBox* m_chkShowAppIcons;
+    TQCheckBox* m_chkAnimateOpening;
     TQCheckBox* m_chkAlwaysShowSearchBar;
     TQLabel*    m_lblTreeIconSize;
     TQComboBox* m_cmbTreeIconSize;

@@ -2,14 +2,23 @@
 set -e
 
 PACKAGE_NAME="tde-kicker-classicx-applet"
-BASE_VERSION="${1:-1.0.0}"
-BUILD_TIMESTAMP=$(date +%Y%m%d.%H%M%S)
+INSTALL_FLAG=0
+VERSION_ARG=""
 
-if [ -n "$1" ]; then
-    PACKAGE_VERSION="$1"
+for arg in "$@"; do
+    if [ "$arg" = "--install" ] || [ "$arg" = "-i" ]; then
+        INSTALL_FLAG=1
+    elif [ -z "$VERSION_ARG" ] && [ "${arg#-}" = "$arg" ]; then
+        VERSION_ARG="$arg"
+    fi
+done
+
+if [ -n "$VERSION_ARG" ]; then
+    PACKAGE_VERSION="$VERSION_ARG"
     DEB_VERSION="${PACKAGE_VERSION}-1"
 else
-    PACKAGE_VERSION="${BASE_VERSION}~build.${BUILD_TIMESTAMP}"
+    BUILD_TIMESTAMP=$(date +%Y%m%d.%H%M%S)
+    PACKAGE_VERSION="1.0.2~build.${BUILD_TIMESTAMP}"
     DEB_VERSION="${PACKAGE_VERSION}"
 fi
 
@@ -95,8 +104,8 @@ dpkg-deb --build "$BUILD_DIR" "$DEB_NAME"
 echo "Package created successfully: $DEB_NAME"
 ls -lh "$DEB_NAME"
 
-# Optional install test (set INSTALL_AFTER_BUILD=1 or pass --install as 2nd arg)
-if [ "$INSTALL_AFTER_BUILD" = "1" ] || [ "$2" = "--install" ]; then
+# Optional install test (pass --install / -i or set INSTALL_AFTER_BUILD=1)
+if [ "$INSTALL_FLAG" = "1" ] || [ "$INSTALL_AFTER_BUILD" = "1" ]; then
     sudo apt install ./$DEB_NAME
     killall kicker && sleep 2 && kicker
 fi

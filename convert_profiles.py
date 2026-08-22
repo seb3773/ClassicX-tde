@@ -38,7 +38,8 @@ CANONICAL_KEYS = [
     "TopPicMode", "TopPicEmbedded", "TopPicCustomLeft", "TopPicCustomCenter",
     "TopPicCustomRight", "TopPicColorize", "TopPicColor", "TopPicShowText",
     "TopPicShowUser", "TopPicShowCustomText", "TopPicText",
-    "TopPicTextColorMode", "TopPicTextColor", "TopPicShowDate", "TopPicShowTime"
+    "TopPicTextColorMode", "TopPicTextColor", "TopPicShowDate", "TopPicShowTime",
+    "AnimateOpening"
 ]
 
 KEY_TO_IDX = {k.lower(): i for i, k in enumerate(CANONICAL_KEYS)}
@@ -71,7 +72,8 @@ BASELINE = {
     "toppicmode": "0", "toppicembedded": "Simple", "toppiccustomleft": "", "toppiccustomcenter": "",
     "toppiccustomright": "", "toppiccolorize": "false", "toppiccolor": "#000000", "toppicshowtext": "false",
     "toppicshowuser": "false", "toppicshowcustomtext": "true", "toppictext": "Trinity Desktop",
-    "toppictextcolormode": "0", "toppictextcolor": "", "toppicshowdate": "false", "toppicshowtime": "false"
+    "toppictextcolormode": "0", "toppictextcolor": "", "toppicshowdate": "false", "toppicshowtime": "false",
+    "animateopening": "false"
 }
 
 def encode_value(val):

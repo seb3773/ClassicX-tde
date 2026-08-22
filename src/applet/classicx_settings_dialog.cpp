@@ -344,9 +344,16 @@ ClassicXSettingsDialog::ClassicXSettingsDialog(TQWidget* parent)
     hBoxTreeIcon->addStretch();
     leftCol->addLayout(hBoxTreeIcon);
 
+    TQHBoxLayout *hBoxAnimSearch = new TQHBoxLayout();
+    m_chkAnimateOpening = new TQCheckBox("Animate opening", this);
+    m_chkAnimateOpening->setChecked(ClassicXSettings::animateOpening());
     m_chkAlwaysShowSearchBar = new TQCheckBox("Show search field", this);
     m_chkAlwaysShowSearchBar->setChecked(ClassicXSettings::alwaysShowSearchBar());
-    leftCol->addWidget(m_chkAlwaysShowSearchBar);
+    hBoxAnimSearch->addWidget(m_chkAnimateOpening);
+    hBoxAnimSearch->addSpacing(16);
+    hBoxAnimSearch->addWidget(m_chkAlwaysShowSearchBar);
+    hBoxAnimSearch->addStretch(1);
+    leftCol->addLayout(hBoxAnimSearch);
     onShowAppIconsToggled(m_chkShowAppIcons->isChecked());
     leftCol->addSpacing(8);
 
@@ -1940,6 +1947,7 @@ void ClassicXSettingsDialog::onOkClicked()
 {
     ClassicXSettings::setShowControlCenter(m_chkControlCenter->isChecked());
     ClassicXSettings::setShowRunCommand(m_chkShowRunCommand->isChecked());
+    ClassicXSettings::setAnimateOpening(m_chkAnimateOpening->isChecked());
     ClassicXSettings::setAlwaysShowSearchBar(m_chkAlwaysShowSearchBar->isChecked());
 
     ClassicXSettings::setShowRecentApps(m_chkShowRecentApps->isChecked());
@@ -2706,6 +2714,7 @@ void ClassicXSettingsDialog::captureDialogState(TQMap<TQString, TQString>& m) co
     if (m_cmbMenuEntryFormat) profilePutNum(m, "MenuEntryFormat", m_cmbMenuEntryFormat->currentItem());
     if (m_chkShowAppIcons) profilePutBool(m, "ShowAppIcons", m_chkShowAppIcons->isChecked());
     if (m_cmbTreeIconSize) profilePutNum(m, "TreeIconSize", m_cmbTreeIconSize->currentItem());
+    if (m_chkAnimateOpening) profilePutBool(m, "AnimateOpening", m_chkAnimateOpening->isChecked());
     if (m_chkAlwaysShowSearchBar) profilePutBool(m, "AlwaysShowSearchBar", m_chkAlwaysShowSearchBar->isChecked());
 
     if (m_chkShowRunCommand) profilePutBool(m, "ShowRunCommand", m_chkShowRunCommand->isChecked());
@@ -2821,6 +2830,8 @@ void ClassicXSettingsDialog::applyDialogState(const TQMap<TQString, TQString>& m
     if (profileHas(m, "MenuEntryFormat")) setComboIndex(m_cmbMenuEntryFormat, profileGetInt(m, "MenuEntryFormat"));
     if (profileHas(m, "ShowAppIcons") && m_chkShowAppIcons) m_chkShowAppIcons->setChecked(profileGetBool(m, "ShowAppIcons"));
     if (profileHas(m, "TreeIconSize")) setComboIndex(m_cmbTreeIconSize, profileGetInt(m, "TreeIconSize"));
+    if (profileHas(m, "AnimateOpening") && m_chkAnimateOpening)
+        m_chkAnimateOpening->setChecked(profileGetBool(m, "AnimateOpening"));
     if (profileHas(m, "AlwaysShowSearchBar") && m_chkAlwaysShowSearchBar)
         m_chkAlwaysShowSearchBar->setChecked(profileGetBool(m, "AlwaysShowSearchBar"));
 
@@ -3121,6 +3132,7 @@ void ClassicXSettingsDialog::updateProfileButtons()
 void ClassicXSettingsDialog::connectProfileDirtyTracking()
 {
     connectProfileDirty(m_chkShowAppIcons, TQT_SIGNAL(toggled(bool)), this);
+    connectProfileDirty(m_chkAnimateOpening, TQT_SIGNAL(toggled(bool)), this);
     connectProfileDirty(m_chkAlwaysShowSearchBar, TQT_SIGNAL(toggled(bool)), this);
     connectProfileDirty(m_chkShowRunCommand, TQT_SIGNAL(toggled(bool)), this);
     connectProfileDirty(m_chkControlCenter, TQT_SIGNAL(toggled(bool)), this);

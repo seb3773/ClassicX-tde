@@ -589,6 +589,11 @@
       <default>false</default>
    </entry>
 
+   <entry name="AnimateOpening" type="Bool" >
+      <label>Animate menu opening</label>
+      <default>false</default>
+   </entry>
+
    <entry name="UseTopSide" type="Bool" >
       <label>Use side image on top of Kmenu</label>
       <default>false</default>

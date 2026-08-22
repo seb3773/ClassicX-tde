@@ -43,7 +43,7 @@ if ! command -v build-qinstaller >/dev/null 2>&1; then
 fi
 
 cd "$QSI_DIR"
-BASE_VERSION="${1:-1.0.0}"
+BASE_VERSION="${1:-1.0.2}"
 
 # Generate dynamic qinstaller with absolute paths to ensure deb packages are bundled
 cat <<EOF > qinstaller

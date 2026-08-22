@@ -17,10 +17,14 @@ public:
     void setInitialized(bool init) { PanelPopupButton::setInitialized(init); }
     void configure();
 
+    virtual void showMenu();
+    void realShowMenu() { PanelPopupButton::showMenu(); }
+
 protected:
     virtual TQString tileName() { return "KMenu"; }
     virtual TQString defaultIcon() const { return "kmenu"; }
     virtual void mousePressEvent(TQMouseEvent *e);
+    virtual void mouseReleaseEvent(TQMouseEvent *e);
 
 protected slots:
     void slotConfigure();
