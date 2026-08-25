@@ -11,12 +11,12 @@ Classic-X combines the lightning-fast responsiveness of classic TDE Kmenu with m
 2. [Interactive Navigation & Search Guide (Keyboard & Mouse UX)](#interactive-navigation--search-guide-keyboard--mouse-ux)
 3. [Settings & Customization Reference](#settings--customization-reference)
    - [Built-in & User Profiles](#1-built-in--user-profiles)
-   - [General Settings & Application History](#2-general-settings--application-history)
+   - [General Settings, Layout & Opening Animation](#2-general-settings-layout--opening-animation)
    - [Colors, Transparency & Typography](#3-colors-transparency--typography)
-   - [Interactive Sidebar & Power Management](#4-interactive-sidebar--power-management)
-   - [Start Icon & UI Icons Customization](#5-start-icon--ui-icons-customization)
-   - [Sidebar Picture & Banner Themes](#6-sidebar-picture--banner-themes)
-   - [Top Header Picture & Dynamic Text Overlay](#7-top-header-picture--dynamic-text-overlay)
+   - [Interactive Sidebar, User Picture & Power Management](#4-interactive-sidebar-user-picture--power-management)
+   - [Start Icon, User Avatar & UI Icons Customization](#5-start-icon-user-avatar--ui-icons-customization)
+   - [Sidebar Picture & Tiled Pattern Themes](#6-sidebar-picture--tiled-pattern-themes)
+   - [Top Header Picture, Alignment & Dynamic Text Overlay](#7-top-header-picture-alignment--dynamic-text-overlay)
 4. [Build, Packaging & Installation](#build-packaging--installation)
 5. [Technical Architecture & Low-Level C++ Optimizations](#technical-architecture--low-level-c-optimizations)
 6. [Screenshots](#screenshots)
@@ -28,8 +28,10 @@ Classic-X combines the lightning-fast responsiveness of classic TDE Kmenu with m
 * **Instant Type-to-Search**: Start typing any alphanumeric key as soon as the menu opens to immediately enter search mode — no dedicated search bar click required.
 * **Smart Fuzzy Search & Accent Normalization**: Handles typos, omissions, and transpositions via an L1-cache optimized Damerau-Levenshtein engine. Automatically normalizes multilingual diacritics (`é`, `è`, `ê`, `à`, `î`, `ö`, `ç` $\rightarrow$ `e`, `a`, `i`, `o`, `c`).
 * **Recent-Prioritized Ranking**: Search results matching applications in your recent launch history (`kickerrc`) are automatically promoted to top positions.
+* **Smooth Opening Animation**: Optional tear-free sliding window animation calculated dynamically relative to panel orientation and screen edges.
 * **Modern Quick-Access Sidebar**: Dedicated interactive buttons for **User / Session**, **Documents**, **Pictures**, **Settings**, and **Log Out** with optional hover-triggered submenus.
-* **Dynamic 3-Part Header Banner & Multi-Element Text Overlay**: 3-part header images (Left/Center/Right) with customizable themes and dynamic text displaying User Name, Custom Text, Localized Date, and Localized Time (HH:MM).
+* **User Picture with Live Preview**: Support for native TDE user avatar, 18 embedded pixel portraits, or custom images, featuring live preview, color inversion, and color tinting.
+* **Dynamic 3-Part Header Banner & Multi-Element Text Overlay**: 3-part header images (Left/Center/Right) with customizable themes, color filters (Invert/Colorize), text alignment (Center/Left/Right), and dynamic overlays: **User Name**, **Custom Text**, **Free RAM (GB)**, **Localized Date**, and **Localized Time (HH:MM)**.
 * **20 Built-in Preset Profiles**: Instant visual transformations (e.g. *2001*, *AlienX*, *BlackMac*, *C64*, *DebianDevil*, *Q4OSmodern*, *Trinity*, *WinX*) embedded as ultra-compact zero-relocation bytecode (< 3.0 KB memory footprint).
 * **Deep "Show in Tree" Navigation**: Right-click any search hit to instantly restore the full application category tree and highlight that specific program inside its folder.
 * **Standalone Plugin**: Zero modifications required to the system `kicker` binary or `tdebase` packages.
@@ -87,7 +89,10 @@ Access the settings dialog by right-clicking the applet handle or menu button an
 * **Preset Profiles Selector**: Switch between 20 crafted built-in profiles (*2001*, *A520ST*, *AlienX*, *BlackMac*, *BlueWork*, *C64*, *DebianDevil*, *GoldFlower*, *GreenWin*, *Japan*, *Q4OSaqua*, *Q4OSmodern*, *RocketScience*, *System7*, *ThinBlack*, *Trinity*, *WinX*, *WintNT2K*, *Woody*, *X11minimal*).
 * **Custom Profiles**: Save your current layout, colors, icons, and picture configuration under a custom name, or delete obsolete user profiles saved in `~/.trinity/share/apps/classicxapplet/profiles/`.
 
-### 2. General Settings & Application History
+### 2. General Settings, Layout & Opening Animation
+* **Smooth Menu Opening Animation**: Enable fluid, tear-free window sliding animation when the menu opens, automatically adapting to top, bottom, left, or right panel positions.
+* **Menu Minimum Width**: Set an optional minimum width (in pixels) to preserve balanced visual proportions with long banner titles or wide submenus.
+* **Center Menu on Button**: Option to center the menu popup relative to the Kicker panel button rather than aligning to its edge.
 * **Always Show Search Bar**: Choose between a permanently visible search input field (on-demand type-to-search is always activated independently of this choice).
 * **Menu Entry Format**: Choose how applications are named across the menu:
   * *Name only* (e.g., `Konqueror`)
@@ -118,34 +123,50 @@ Access the settings dialog by right-clicking the applet handle or menu button an
     * **Button Hover Highlight Color**
 * **Font Mode**: Use standard TDE System font (`TDEGlobalSettings::generalFont()`) or select a custom typography font and size via font dialog.
 
-### 4. Interactive Sidebar & Power Management
+### 4. Interactive Sidebar, User Picture & Power Management
 * **Sidebar Toggle & Geometry**: Enable/disable sidebar, configure custom width (24px to 64px), and choose vertical button alignment (*Top*, *Center*, *Bottom*).
+* **User Button Position**: Place the User profile button at the **Top** or **Bottom** of the sidebar.
 * **Hover Activation**: Submenus (User / Shutdown) can open automatically on pointer hover with configurable delay (100ms to 1000ms).
-* **Quick-Access Buttons**: Toggle individual sidebar buttons for **User Menu**, **Shutdown Menu**, **Settings**, **Documents**, and **Pictures**.
-* **Submenu Height Mode**: Choose between **Full Menu Height** (submenus expand to match main menu height) or **Custom Height** (150px to 600px).
+* **Quick-Access Buttons**: Toggle individual sidebar buttons for **User Menu**, **Shutdown Menu**, **Settings**, **Documents**, **Pictures**, and **Downloads**.
+* **Submenu Height Mode**: Choose between **Full Menu Height** (submenus expand to match main menu height perfectly, adapting seamlessly when Top Pictures are active) or **Custom Height** (150px to 600px).
 * **Power Management Actions**: Toggle individual power actions (**Power Off**, **Reboot**, **Suspend**, **Hybrid Suspend**, **Hibernate**) with automatic backend detection (ConsoleKit, systemd-logind, UPower, TDE PowerManager).
 
-### 5. Start Icon & UI Icons Customization
+### 5. Start Icon, User Avatar & UI Icons Customization
 * **Start Menu Button**:
   * *Source*: Embedded presets (*Classic, Modern, WinBlue, Tux, Debian, Commodore, Apple, Atari, Q4OS...*), TDE System Icon, or Custom file path.
-  * *Rendering*: **Full-scale** (fills panel button height), **Invert colors**, and **Colorize tint** with custom color picker.
+  * *Live Preview*: Integrated preview widget reflecting icon choice, colorization, color inversion, and exact button proportions.
+  * *Rendering*: **Full-scale** (expands icon to fill panel button dimensions with live preview feedback), **Invert colors**, and **Colorize tint** with custom color picker.
+* **User Profile Picture**:
+  * *Modes*: Disabled, TDE User Avatar (`~/.face`), Embedded preset portraits (18 pixel art and modern avatars), or Custom image path.
+  * *Live Preview*: Snug square preview frame with real-time feedback.
+  * *Filters*: **Invert colors** and **Colorize tint** with dedicated color picker.
 * **UI Icons (Sidebar & Submenu Chrome)**:
   * *Size*: 16px, 22px, 24px, 28px, 32px, 36px, 48px.
-  * *Source Customization*: Assign individual icon sources or apply batch presets across all 9 UI categories (Settings, Documents, Pictures, User, Shutdown, Power Off, Reboot, Suspend, Hibernate).
+  * *Source Customization*: Assign individual icon sources or apply batch presets across all UI categories (Settings, Documents, Pictures, Downloads, User, Shutdown, Power Off, Reboot, Suspend, Hibernate).
   * *Filters*: **Invert colors** and **Colorize tint**.
 
-### 6. Sidebar Picture & Banner Themes
-* **Modes**: Disabled, Embedded Theme (*Ocean, Lava, HAL9000, Borders, Carbon, Waves, Retro...*), or Custom Image file.
-* **Layout & Alignment**: Align Top / Bottom, Stretch / Crop to sidebar width, Extend beyond edges.
-* **Color Tint**: Optional colorize filter for sidebar pictures.
+### 6. Sidebar Picture & Tiled Pattern Themes
+* **Modes**: Disabled, **Pattern mode** (repeating vertical tile), or **Picture mode** (single background graphic).
+* **Sources**: Embedded preset themes (*Ocean, Lava, HAL9000, Borders, Carbon, Waves, Retro, Chevron...*) or Custom image file.
+* **Layout & Geometry**:
+  * *Width Mode*: **Stretch** (proportional scaling to sidebar width) or **Crop** (centered native resolution).
+  * *Vertical Alignment*: **Align Top** or **Align Bottom** (in Picture mode).
+  * *Extend Edges*: Render behind sidebar button padding for edge-to-edge aesthetics.
+* **Filters**: **Invert colors** and **Colorize tint** with custom color selection.
 
-### 7. Top Header Picture & Dynamic Text Overlay
-* **3-Part Header Banner**: Embed Left/Center/Right composite banners (*Royal, Slate, Ocean, Minimal, Classic...*) or custom image.
+### 7. Top Header Picture, Alignment & Dynamic Text Overlay
+* **3-Part Header Banner**: Embed Left / Center (tiled) / Right composite banners (*Royal, Slate, Ocean, Minimal, Classic...*) or custom image files.
+* **Banner Filters**: **Invert colors** and **Colorize tint** with custom highlight color.
 * **Dynamic Multi-Element Text Overlay**:
-  * Combine **User Name**, **Custom Text** (e.g. *"Trinity Desktop"*), **Localized Date**, and **Localized Time** (HH:MM without seconds).
-  * Automatically formats with smart `" - "` separators.
-  * Text Color control: *TDE Default*, *Title Text Color*, or *Custom Color*.
-  * Optional colorize filter on header graphics.
+  * Combine any combination of:
+    * **User Name**: Full user name or login name via `KUser`.
+    * **Custom Text**: Custom string (e.g. *"Trinity Desktop"*).
+    * **Free RAM**: Real-time available system memory formatted in GB (e.g. `RAM: 8.3 GB`).
+    * **Date of the day**: Localized date format.
+    * **Time (HH:MM)**: Localized hour and minute without distracting seconds.
+  * Automatically formatted with clean `" - "` separators.
+* **Text Alignment**: Horizontal alignment selection (**Center**, **Left**, **Right**) with vertical centering.
+* **Text Color Modes**: *TDE Default*, *Title Text Color*, or *Custom Color*.
 
 ---
 
@@ -255,6 +276,13 @@ TQt3 `TQPopupMenu` and `TQIconSet` have specific internal constraints that must 
    * Inactive options are pruned during build, keeping the entire 20-profile database under **3.0 KB in memory**.
 7. **Selective Granular `-Os` Compilation**:
    * The settings dialog (`classicx_settings_dialog.cpp`) and profile loader (`classicx_profile.cpp`) are compiled with `-Os` (`#pragma GCC optimize ("Os")` + CMake `COMPILE_FLAGS "-Os"`), reducing binary size by ~16 KB while keeping core search and indexing engines at `-O2 -flto=auto` performance.
+8. **Tear-Free Menu Opening Animation Engine**:
+   * When `AnimateOpening` is enabled, the menu uses an interpolation state machine driven by a low-overhead timer loop (`animateStep()`) operating across a ~90ms envelope.
+   * Geometric steps calculate window position and height/width expansion incrementally relative to panel edge orientation (Bottom, Top, Left, Right).
+   * Geometry is clamped to single-buffer target bounds without secondary resize events or multiple repaint cycles, preventing X11 compositor tearing, artifacts, and input stalling.
+9. **Sub-Microsecond Free RAM Kernel Probe**:
+   * System memory availability for the dynamic top header overlay is extracted via direct linear reading of `/proc/meminfo` (`MemAvailable` / `MemFree`) using native POSIX system calls (`open(..., O_RDONLY)` / `read()` / `close()`).
+   * Takes **~2 microseconds** ($0.000002$s), eliminating shell forks, helper subprocesses (`free`, `awk`, `vmstat`), and background polling daemons. Memory readings remain fresh at each menu invocation without adding measurable latency.
 
 ---
 

@@ -60,15 +60,17 @@ private slots:
     void onUiIconPresetChanged(int index);
     void onBrowseUiIconClicked();
     void onSidebarPicModeChanged(int mode);
-    void onSidebarPicSourceToggled(bool enabled);
+    void onSidebarPicSourceChanged(int index);
     void onBrowseCustomPicClicked();
+    void onSidebarPicInvertToggled(bool enabled);
     void onSidebarPicColorizeToggled(bool enabled);
     void onSidebarPicColorClicked();
     void onTopPicModeChanged(int mode);
-    void onUserShutdownHeightToggled(bool enabled);
+    void onUserShutdownHeightModeChanged(int index);
     void onBrowseTopPicLeftClicked();
     void onBrowseTopPicCenterClicked();
     void onBrowseTopPicRightClicked();
+    void onTopPicInvertToggled(bool enabled);
     void onTopPicColorizeToggled(bool enabled);
     void onTopPicColorClicked();
     void onTopPicShowTextToggled(bool enabled);
@@ -78,6 +80,13 @@ private slots:
     void onProfileActivated(int index);
     void onProfileSaveClicked();
     void onProfileDeleteClicked();
+    void onMenuWidthModeChanged(int index);
+    void onUserPicModeChanged(int mode);
+    void onBrowseUserPicClicked();
+    void onInvertUserPicToggled(bool enabled);
+    void onColorizeUserPicToggled(bool enabled);
+    void onUserPicColorClicked();
+    void updateUserPicPreview();
     void onSettingsEdited();
     void updateSidebarWidthConstraints();
 
@@ -93,6 +102,8 @@ private:
     bool sidebarHasButtons() const;
     void updateSidebarPictureUI();
     void updateTopPictureUI();
+    int  getAutoMenuWidth() const;
+    void updateMenuWidthUI();
     void captureDialogState(TQMap<TQString, TQString>& m) const;
     void applyDialogState(const TQMap<TQString, TQString>& m);
     bool dialogStateEquals(const TQMap<TQString, TQString>& m) const;
@@ -126,7 +137,11 @@ private:
     TQComboBox* m_cmbMenuEntryFormat;
     TQCheckBox* m_chkShowAppIcons;
     TQCheckBox* m_chkAnimateOpening;
+    TQCheckBox* m_chkMenuCentered;
     TQCheckBox* m_chkAlwaysShowSearchBar;
+    TQLabel*    m_lblMenuWidthMode;
+    TQComboBox* m_cmbMenuWidthMode;
+    TQSpinBox*  m_spinMenuMinWidth;
     TQLabel*    m_lblTreeIconSize;
     TQComboBox* m_cmbTreeIconSize;
     TQSlider*   m_sliderOpacity;
@@ -142,16 +157,15 @@ private:
 
     // User & Shutdown panel height controls
     TQLabel*       m_lblUserShutdownHeight;
-    TQRadioButton* m_rbUserShutdownFullHeight;
-    TQRadioButton* m_rbUserShutdownCustomHeight;
+    TQComboBox*    m_cmbUserShutdownHeightMode;
     TQSpinBox*     m_spinUserShutdownCustomHeight;
 
     // Sidebar Picture controls
     TQLabel*       m_lblPicMode;
     TQComboBox*    m_cmbSidebarPicMode;
-    TQRadioButton* m_rbPicEmbedded;
+    TQComboBox*    m_cmbSidebarPicSource;
+    class TQWidgetStack* m_sidebarPicSourceStack;
     TQComboBox*    m_cmbPicEmbedded;
-    TQRadioButton* m_rbPicCustom;
     TQPushButton*  m_btnBrowseCustomPic;
     TQString       m_customPicPath;
     TQRadioButton* m_rbPicStretch;
@@ -159,6 +173,7 @@ private:
     TQRadioButton* m_rbPicAlignTop;
     TQRadioButton* m_rbPicAlignBottom;
     TQCheckBox*    m_chkSidebarPicExtendEdges;
+    TQCheckBox*    m_chkSidebarPicInvert;
     TQCheckBox*    m_chkSidebarPicColorize;
     TQPushButton*  m_btnSidebarPicColor;
     TQColor        m_sidebarPicColor;
@@ -175,6 +190,7 @@ private:
     TQLabel*       m_lblTopPicRightPath;
     TQPushButton*  m_btnBrowseTopPicRight;
     TQString       m_topPicRightPath;
+    TQCheckBox*    m_chkTopPicInvert;
     TQCheckBox*    m_chkTopPicColorize;
     TQPushButton*  m_btnTopPicColor;
     TQColor        m_topPicColor;
@@ -186,6 +202,9 @@ private:
     TQComboBox*    m_cmbTopPicTextColorMode;
     TQPushButton*  m_btnTopPicTextColor;
     TQColor        m_topPicTextColor;
+    TQLabel*       m_lblTopPicTextAlign;
+    TQComboBox*    m_cmbTopPicTextAlign;
+    TQCheckBox*    m_chkTopPicUseRam;
     TQCheckBox*    m_chkTopPicUseDate;
     TQCheckBox*    m_chkTopPicUseTime;
 
@@ -195,6 +214,8 @@ private:
     TQCheckBox* m_chkSidebarSettings;
     TQCheckBox* m_chkSidebarDocuments;
     TQCheckBox* m_chkSidebarImages;
+    TQCheckBox* m_chkSidebarDownloads;
+    TQCheckBox* m_chkSidebarUserOnTop;
 
     TQCheckBox* m_chkShutdownPowerOff;
     TQCheckBox* m_chkShutdownReboot;
@@ -202,11 +223,22 @@ private:
     TQCheckBox* m_chkShutdownHybridSuspend;
     TQCheckBox* m_chkShutdownHibernate;
 
+    // User Picture controls
+    TQLabel*             m_lblUserPicPreview;
+    TQComboBox*          m_cmbUserPicMode;
+    class TQWidgetStack* m_userPicStack;
+    TQComboBox*          m_cmbUserPicEmbedded;
+    TQPushButton*        m_btnBrowseUserPic;
+    TQString             m_userPicCustomPath;
+    TQCheckBox*          m_chkInvertUserPic;
+    TQCheckBox*          m_chkColorizeUserPic;
+    TQPushButton*        m_btnUserPicColor;
+    TQColor              m_userPicColor;
+
     TQLabel*      m_lblStartIconPreview;
-    TQRadioButton* m_rbIconEmbedded;
+    TQComboBox*   m_cmbIconType;
+    class TQWidgetStack* m_iconTypeStack;
     TQComboBox*   m_cmbEmbeddedIcon;
-    TQRadioButton* m_rbIconTDE;
-    TQRadioButton* m_rbIconCustom;
     TQPushButton* m_btnBrowseCustomIcon;
     TQString      m_customIconPath;
     TQCheckBox*   m_chkFullScaleStartIcon;
@@ -230,8 +262,8 @@ private:
         TQString customPath;
     };
 
-    static const int UI_ICON_COUNT = 9;
-    UiIconControl m_uiIconControls[9];
+    static const int UI_ICON_COUNT = 11;
+    UiIconControl m_uiIconControls[11];
 
     TQComboBox* m_cmbColorMode;
 

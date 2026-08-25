@@ -21,16 +21,20 @@ def main():
     top_pix_dir = os.path.join(icons_dir, "top_pix")
     ui_win_dir = os.path.join(icons_dir, "ui_win")
     ui_kde_dir = os.path.join(icons_dir, "ui_kde")
+    ui_alt_dir = os.path.join(icons_dir, "ui_alt")
+    ui_alt2_dir = os.path.join(icons_dir, "ui_alt2")
+    users_pix_dir = os.path.join(icons_dir, "users_pix")
     
     root_start_dir = os.path.join(repo_root, "start")
     root_sidebar_patterns_dir = os.path.join(repo_root, "sidebar_patterns")
     root_sidebar_pictures_dir = os.path.join(repo_root, "sidebar_pictures")
     root_top_pix_dir = os.path.join(repo_root, "top_pix")
+    root_users_pix_dir = os.path.join(repo_root, "users_pix")
     
     search_dirs = [
         icons_dir, start_icons_dir, sidebar_patterns_dir, sidebar_pictures_dir, top_pix_dir,
-        ui_win_dir, ui_kde_dir,
-        root_start_dir, root_sidebar_patterns_dir, root_sidebar_pictures_dir, root_top_pix_dir
+        ui_win_dir, ui_kde_dir, ui_alt_dir, ui_alt2_dir, users_pix_dir,
+        root_start_dir, root_sidebar_patterns_dir, root_sidebar_pictures_dir, root_top_pix_dir, root_users_pix_dir
     ]
     
     image_files = []
@@ -82,7 +86,8 @@ def main():
         is_pattern = 2 if parent_dir == "sidebar_patterns" else 0
         is_picture = 4 if parent_dir == "sidebar_pictures" else 0
         is_top_pix = 8 if parent_dir == "top_pix" else 0
-        flags = is_start | is_pattern | is_picture | is_top_pix
+        is_user_pix = 16 if parent_dir == "users_pix" else 0
+        flags = is_start | is_pattern | is_picture | is_top_pix | is_user_pix
         
         entries.append((name_offset, data_offset, data_size, flags))
         
@@ -128,6 +133,7 @@ def main():
     bool is_sidebar_pattern() const { return (flags & 2) != 0; }
     bool is_sidebar_picture() const { return (flags & 4) != 0; }
     bool is_top_pix() const { return (flags & 8) != 0; }
+    bool is_user_pix() const { return (flags & 16) != 0; }
 };
 """)
     

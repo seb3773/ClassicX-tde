@@ -21,25 +21,27 @@ CANONICAL_KEYS = [
     "ButtonHoverColor", "FontMode", "Font", "UseSidePixmap", "SideBarWidth",
     "SidebarHover", "SidebarHoverDelay", "SidebarButtonsAlign",
     "ShowSidebarUserMenu", "ShowSidebarShutdownMenu", "ShowSidebarSettings",
-    "ShowSidebarDocuments", "ShowSidebarImages", "FullUserShutdownHeight",
+    "ShowSidebarDocuments", "ShowSidebarImages", "ShowSidebarDownloads", "SidebarUserOnTop", "FullUserShutdownHeight",
     "CustomUserShutdownHeight", "ShutdownPowerOff", "ShutdownReboot",
     "ShutdownSuspend", "ShutdownHybridSuspend", "ShutdownHibernate",
+    "UserPicMode", "UserPicEmbedded", "UserPicCustomPath",
+    "InvertUserPic", "ColorizeUserPic", "UserPicColor",
     "IconType", "EmbeddedIcon", "CustomIconPath", "FullScaleStartIcon",
     "InvertStartIcon", "ColorizeStartIcon", "StartIconColor",
     "InvertUiIcons", "ColorizeUiIcons", "UiIconColor", "UiIconSize",
     "UiIconSource0", "UiIconSource1", "UiIconSource2", "UiIconSource3",
     "UiIconSource4", "UiIconSource5", "UiIconSource6", "UiIconSource7",
-    "UiIconSource8", "UiIconPath0", "UiIconPath1", "UiIconPath2",
+    "UiIconSource8", "UiIconSource9", "UiIconSource10", "UiIconPath0", "UiIconPath1", "UiIconPath2",
     "UiIconPath3", "UiIconPath4", "UiIconPath5", "UiIconPath6",
-    "UiIconPath7", "UiIconPath8", "SidebarPictureMode", "SidebarPictureSource",
+    "UiIconPath7", "UiIconPath8", "UiIconPath9", "UiIconPath10", "SidebarPictureMode", "SidebarPictureSource",
     "SidebarPictureEmbedded", "SidebarPictureCustomPath",
     "SidebarPictureWidthMode", "SidebarPictureAlignMode",
-    "SidebarPictureExtendEdges", "SidebarPictureColorize", "SidebarPictureColor",
+    "SidebarPictureExtendEdges", "SidebarPictureInvert", "SidebarPictureColorize", "SidebarPictureColor",
     "TopPicMode", "TopPicEmbedded", "TopPicCustomLeft", "TopPicCustomCenter",
-    "TopPicCustomRight", "TopPicColorize", "TopPicColor", "TopPicShowText",
+    "TopPicCustomRight", "TopPicInvert", "TopPicColorize", "TopPicColor", "TopPicShowText",
     "TopPicShowUser", "TopPicShowCustomText", "TopPicText",
-    "TopPicTextColorMode", "TopPicTextColor", "TopPicShowDate", "TopPicShowTime",
-    "AnimateOpening"
+    "TopPicTextColorMode", "TopPicTextColor", "TopPicTextAlign", "TopPicShowRam", "TopPicShowDate", "TopPicShowTime",
+    "AnimateOpening", "MenuMinWidth", "MenuCentered"
 ]
 
 KEY_TO_IDX = {k.lower(): i for i, k in enumerate(CANONICAL_KEYS)}
@@ -55,25 +57,27 @@ BASELINE = {
     "buttonhovercolor": "", "fontmode": "0", "font": "", "usesidepixmap": "true", "sidebarwidth": "48",
     "sidebarhover": "true", "sidebarhoverdelay": "550", "sidebarbuttonsalign": "0",
     "showsidebarusermenu": "true", "showsidebarshutdownmenu": "true", "showsidebarsettings": "true",
-    "showsidebardocuments": "true", "showsidebarimages": "true", "fullusershutdownheight": "true",
+    "showsidebardocuments": "true", "showsidebarimages": "true", "showsidebardownloads": "false", "sidebaruserontop": "false", "fullusershutdownheight": "true",
     "customusershutdownheight": "300", "shutdownpoweroff": "true", "shutdownreboot": "true",
     "shutdownsuspend": "true", "shutdownhybridsuspend": "true", "shutdownhibernate": "true",
+    "userpicmode": "0", "userpicembedded": "classic", "userpiccustompath": "",
+    "invertuserpic": "false", "colorizeuserpic": "false", "userpiccolor": "#000000",
     "icontype": "0", "embeddedicon": "WinBlue", "customiconpath": "", "fullscalestarticon": "false",
     "invertstarticon": "false", "colorizestarticon": "false", "starticoncolor": "#000000",
     "invertuiicons": "false", "colorizeuiicons": "false", "uiiconcolor": "#000000", "uiiconsize": "24",
     "uiiconsource0": "0", "uiiconsource1": "0", "uiiconsource2": "0", "uiiconsource3": "0",
     "uiiconsource4": "0", "uiiconsource5": "0", "uiiconsource6": "0", "uiiconsource7": "0",
-    "uiiconsource8": "0", "uiiconpath0": "", "uiiconpath1": "", "uiiconpath2": "",
+    "uiiconsource8": "0", "uiiconsource9": "0", "uiiconsource10": "0", "uiiconpath0": "", "uiiconpath1": "", "uiiconpath2": "",
     "uiiconpath3": "", "uiiconpath4": "", "uiiconpath5": "", "uiiconpath6": "",
-    "uiiconpath7": "", "uiiconpath8": "", "sidebarpicturemode": "0", "sidebarpicturesource": "0",
+    "uiiconpath7": "", "uiiconpath8": "", "uiiconpath9": "", "uiiconpath10": "", "sidebarpicturemode": "0", "sidebarpicturesource": "0",
     "sidebarpictureembedded": "Borders", "sidebarpicturecustompath": "",
     "sidebarpicturewidthmode": "0", "sidebarpicturealignmode": "0",
-    "sidebarpictureextendedges": "false", "sidebarpicturecolorize": "false", "sidebarpicturecolor": "#f9f9f9",
+    "sidebarpictureextendedges": "false", "sidebarpictureinvert": "false", "sidebarpicturecolorize": "false", "sidebarpicturecolor": "#f9f9f9",
     "toppicmode": "0", "toppicembedded": "Simple", "toppiccustomleft": "", "toppiccustomcenter": "",
-    "toppiccustomright": "", "toppiccolorize": "false", "toppiccolor": "#000000", "toppicshowtext": "false",
+    "toppiccustomright": "", "toppicinvert": "false", "toppiccolorize": "false", "toppiccolor": "#000000", "toppicshowtext": "false",
     "toppicshowuser": "false", "toppicshowcustomtext": "true", "toppictext": "Trinity Desktop",
-    "toppictextcolormode": "0", "toppictextcolor": "", "toppicshowdate": "false", "toppicshowtime": "false",
-    "animateopening": "false"
+    "toppictextcolormode": "0", "toppictextcolor": "", "toppictextalign": "0", "toppicshowram": "false", "toppicshowdate": "false", "toppicshowtime": "false",
+    "animateopening": "false", "menuminwidth": "0", "menucentered": "false"
 }
 
 def encode_value(val):
@@ -133,20 +137,91 @@ def main():
         # Prune inactive / dead options to minimize size
         if d.get("fontmode", "0") == "0":
             d["font"] = ""
-        if d.get("toppicmode", "0") == "0" or d.get("toppicshowtext", "false").lower() != "true" or d.get("toppicshowcustomtext", "false").lower() != "true":
-            d["toppictext"] = BASELINE["toppictext"]
-        if d.get("toppicmode", "0") == "0" or d.get("toppicshowtext", "false").lower() != "true" or d.get("toppictextcolormode", "0") != "2":
-            d["toppictextcolor"] = BASELINE["toppictextcolor"]
-        if d.get("toppicmode", "0") == "0" or d.get("toppiccolorize", "false").lower() != "true":
+        if d.get("toppicmode", "0") == "0":
+            d["toppicembedded"] = BASELINE["toppicembedded"]
+            d["toppiccustomleft"] = BASELINE["toppiccustomleft"]
+            d["toppiccustomcenter"] = BASELINE["toppiccustomcenter"]
+            d["toppiccustomright"] = BASELINE["toppiccustomright"]
+            d["toppicinvert"] = BASELINE["toppicinvert"]
+            d["toppiccolorize"] = BASELINE["toppiccolorize"]
             d["toppiccolor"] = BASELINE["toppiccolor"]
-        if d.get("sidebarpicturemode", "0") == "0" or d.get("sidebarpicturecolorize", "false").lower() != "true":
+            d["toppicshowtext"] = BASELINE["toppicshowtext"]
+            d["toppicshowuser"] = BASELINE["toppicshowuser"]
+            d["toppicshowcustomtext"] = BASELINE["toppicshowcustomtext"]
+            d["toppictext"] = BASELINE["toppictext"]
+            d["toppictextcolormode"] = BASELINE["toppictextcolormode"]
+            d["toppictextcolor"] = BASELINE["toppictextcolor"]
+            d["toppictextalign"] = BASELINE["toppictextalign"]
+            d["toppicshowram"] = BASELINE["toppicshowram"]
+            d["toppicshowdate"] = BASELINE["toppicshowdate"]
+            d["toppicshowtime"] = BASELINE["toppicshowtime"]
+        else:
+            if d.get("toppicshowtext", "false").lower() != "true" or d.get("toppicshowcustomtext", "false").lower() != "true":
+                d["toppictext"] = BASELINE["toppictext"]
+            if d.get("toppicshowtext", "false").lower() != "true" or d.get("toppictextcolormode", "0") != "2":
+                d["toppictextcolor"] = BASELINE["toppictextcolor"]
+            if d.get("toppicshowtext", "false").lower() != "true":
+                d["toppictextalign"] = BASELINE["toppictextalign"]
+                d["toppicshowram"] = BASELINE["toppicshowram"]
+            if d.get("toppiccolorize", "false").lower() != "true":
+                d["toppiccolor"] = BASELINE["toppiccolor"]
+
+        if d.get("sidebarpicturemode", "0") == "0":
+            d["sidebarpicturesource"] = BASELINE["sidebarpicturesource"]
+            d["sidebarpictureembedded"] = BASELINE["sidebarpictureembedded"]
+            d["sidebarpicturecustompath"] = BASELINE["sidebarpicturecustompath"]
+            d["sidebarpicturewidthmode"] = BASELINE["sidebarpicturewidthmode"]
+            d["sidebarpicturealignmode"] = BASELINE["sidebarpicturealignmode"]
+            d["sidebarpictureextendedges"] = BASELINE["sidebarpictureextendedges"]
+            d["sidebarpictureinvert"] = BASELINE["sidebarpictureinvert"]
+            d["sidebarpicturecolorize"] = BASELINE["sidebarpicturecolorize"]
             d["sidebarpicturecolor"] = BASELINE["sidebarpicturecolor"]
+        elif d.get("sidebarpicturecolorize", "false").lower() != "true":
+            d["sidebarpicturecolor"] = BASELINE["sidebarpicturecolor"]
+
+        if d.get("usesidepixmap", "true").lower() == "false":
+            d["sidebarwidth"] = BASELINE["sidebarwidth"]
+            d["sidebarhover"] = BASELINE["sidebarhover"]
+            d["sidebarhoverdelay"] = BASELINE["sidebarhoverdelay"]
+            d["sidebarbuttonsalign"] = BASELINE["sidebarbuttonsalign"]
+            d["showsidebarusermenu"] = BASELINE["showsidebarusermenu"]
+            d["showsidebarshutdownmenu"] = BASELINE["showsidebarshutdownmenu"]
+            d["showsidebarsettings"] = BASELINE["showsidebarsettings"]
+            d["showsidebardocuments"] = BASELINE["showsidebardocuments"]
+            d["showsidebarimages"] = BASELINE["showsidebarimages"]
+            d["showsidebardownloads"] = BASELINE["showsidebardownloads"]
+            d["sidebaruserontop"] = BASELINE["sidebaruserontop"]
+
+        if d.get("showsidebarusermenu", "true").lower() == "false":
+            d["sidebaruserontop"] = BASELINE["sidebaruserontop"]
+
         if d.get("colorizestarticon", "false").lower() != "true":
             d["starticoncolor"] = BASELINE["starticoncolor"]
         if d.get("colorizeuiicons", "false").lower() != "true":
             d["uiiconcolor"] = BASELINE["uiiconcolor"]
         if d.get("fullusershutdownheight", "true").lower() == "true":
             d["customusershutdownheight"] = BASELINE["customusershutdownheight"]
+        if d.get("userpicmode", "0") != "1":
+            d["userpicembedded"] = BASELINE["userpicembedded"]
+        if d.get("userpicmode", "0") != "2":
+            d["userpiccustompath"] = BASELINE["userpiccustompath"]
+        if d.get("colorizeuserpic", "false").lower() != "true":
+            d["userpiccolor"] = BASELINE["userpiccolor"]
+        if d.get("icontype", "0") != "2":
+            d["customiconpath"] = BASELINE["customiconpath"]
+
+        for i in range(11):
+            src_k = f"uiiconsource{i}"
+            path_k = f"uiiconpath{i}"
+            # Custom is 4 (or 1 in older configs if not yet mapped)
+            if d.get(src_k, "0") not in ("4", "1"):
+                d[path_k] = BASELINE.get(path_k, "")
+
+        try:
+            if int(d.get("menuminwidth", "0") or 0) <= 0:
+                d["menuminwidth"] = BASELINE["menuminwidth"]
+        except ValueError:
+            d["menuminwidth"] = BASELINE["menuminwidth"]
 
         deltas = []
         for k, base_val in BASELINE.items():

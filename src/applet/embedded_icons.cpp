@@ -164,6 +164,18 @@ TQStringList getTopPixThemeNames()
     return list;
 }
 
+TQStringList getUserPixNames()
+{
+    TQStringList list;
+    for (size_t i = 0; i < classicx_embedded_icons_count; ++i) {
+        if (classicx_embedded_icons_registry[i].is_user_pix()) {
+            list.append(classicx_embedded_icons_registry[i].name());
+        }
+    }
+    list.sort();
+    return list;
+}
+
 static const ClassicXEmbeddedIconEntry* findEntry(const TQString &name)
 {
     if (name.isEmpty()) return 0;
@@ -224,12 +236,31 @@ static void uiIconSourceForName(const TQString &name, int &type, TQString &custo
     } else if (name == "menu-images") {
         type = ClassicXSettings::imagesIconType();
         customPath = ClassicXSettings::imagesCustomIconPath();
+    } else if (name == "menu-downloads") {
+        type = ClassicXSettings::downloadsIconType();
+        customPath = ClassicXSettings::downloadsCustomIconPath();
+    } else if (name == "system-lock-screen") {
+        type = ClassicXSettings::lockScreenIconType();
+        customPath = ClassicXSettings::lockScreenCustomIconPath();
     } else if (name == "menu-settings") {
         type = ClassicXSettings::settingsIconType();
         customPath = ClassicXSettings::settingsCustomIconPath();
+    } else if (name == "switchuser") {
+        int mode = ClassicXSettings::userPicMode(); // 0=TDE, 1=Embedded, 2=Custom
+        if (mode == 2) {
+            type = 1;
+            customPath = ClassicXSettings::userPicCustomPath();
+        } else if (mode == 1) {
+            type = 10;
+            customPath = ClassicXSettings::userPicEmbedded();
+            if (customPath.isEmpty()) customPath = "classic";
+        } else {
+            type = 0;
+            customPath = TQString::null;
+        }
     }
-    // 0 = Win, 1 = Custom, 2 = KDE. Path is only used for Custom.
-    if (type != 1)
+    // 0 = Win, 1 = Custom, 2 = KDE, 3 = Alt, 4 = Alt2, 10 = Embedded UserPic.
+    if (type != 1 && type != 10)
         customPath = TQString::null;
 }
 
@@ -240,17 +271,34 @@ TQPixmap getPixmap(const TQString &name, int width, int height, bool applyTransf
         if (width < 20) width = height = 20;
     }
 
-    bool invert = applyTransform ? ClassicXSettings::invertUiIcons() : false;
-    bool colorize = applyTransform ? ClassicXSettings::colorizeUiIcons() : false;
-    TQColor iconColor = ClassicXSettings::uiIconColor();
+    bool invert = false;
+    bool colorize = false;
+    TQColor iconColor;
+
+    if (name == "switchuser") {
+        invert = applyTransform ? ClassicXSettings::invertUserPic() : false;
+        colorize = applyTransform ? ClassicXSettings::colorizeUserPic() : false;
+        iconColor = ClassicXSettings::userPicColor();
+    } else {
+        invert = applyTransform ? ClassicXSettings::invertUiIcons() : false;
+        colorize = applyTransform ? ClassicXSettings::colorizeUiIcons() : false;
+        iconColor = ClassicXSettings::uiIconColor();
+    }
 
     int iconType = 0;
     TQString customPath;
     uiIconSourceForName(name, iconType, customPath);
 
     TQString lookupName = name;
-    if (iconType == 2)
+    if (iconType == 10) {
+        lookupName = customPath.isEmpty() ? TQString::fromLatin1("classic") : customPath;
+        customPath = TQString::null;
+    } else if (iconType == 2)
         lookupName = TQString::fromLatin1("kde_") + name;
+    else if (iconType == 3)
+        lookupName = TQString::fromLatin1("alt_") + name;
+    else if (iconType == 4)
+        lookupName = TQString::fromLatin1("alt2_") + name;
 
     TQString cacheKey;
     cacheKey.reserve(80);
@@ -289,13 +337,18 @@ TQPixmap getPixmap(const TQString &name, int width, int height, bool applyTransf
 
     if (img.isNull()) {
         const ClassicXEmbeddedIconEntry* entry = findEntry(lookupName);
-        if (!entry && iconType == 2)
+        if (!entry && (iconType == 2 || iconType == 3 || iconType == 4))
             entry = findEntry(name);
         if (entry) {
             img.loadFromData(entry->data(), (uint)entry->size);
         } else {
             TQPixmap sysPx = TDEGlobal::iconLoader()->loadIcon(lookupName, TDEIcon::Small, width);
-            if (!sysPx.isNull()) img = sysPx.convertToImage();
+            if (!sysPx.isNull()) {
+                img = sysPx.convertToImage();
+            } else {
+                sysPx = TDEGlobal::iconLoader()->loadIcon(name, TDEIcon::Small, width);
+                if (!sysPx.isNull()) img = sysPx.convertToImage();
+            }
         }
     }
 

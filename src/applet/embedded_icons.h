@@ -11,6 +11,7 @@ namespace EmbeddedIcons
     TQStringList getSidebarPatternNames();
     TQStringList getSidebarPictureNames();
     TQStringList getTopPixThemeNames();
+    TQStringList getUserPixNames();
     bool hasIcon(const TQString &name);
     TQImage getNativeImage(const TQString &name);
     TQPixmap getPixmap(const TQString &name, int width = 0, int height = 0, bool applyTransform = true);

@@ -200,6 +200,37 @@ TQPoint popupPosition(KPanelApplet::Direction d,
                      const TQWidget* source,
                      const TQPoint& offset)
 {
+    if (ClassicXSettings::menuCentered())
+    {
+        TQDesktopWidget* desktop = TQApplication::desktop();
+        int scrNum = desktop->screenNumber(const_cast<TQWidget*>(source));
+        TQRect screen = desktop->screenGeometry(scrNum);
+        TQRect ag = desktop->availableGeometry(scrNum);
+
+        int x = screen.left() + (screen.width() - popup->width()) / 2;
+        int y;
+
+        if (d == KPanelApplet::Up && source && source->topLevelWidget())
+        {
+            // Panel is at the bottom: place directly above the panel
+            y = source->topLevelWidget()->y() - popup->height();
+        }
+        else
+        {
+            // Panel is at the top, left, or right: align to bottom of work area
+            y = ag.bottom() - popup->height() + 1;
+        }
+
+        if (x + popup->width() > screen.right() + 1)
+            x = screen.right() - popup->width() + 1;
+        if (x < screen.left())
+            x = screen.left();
+        if (y < ag.top())
+            y = ag.top();
+
+        return TQPoint(x, y);
+    }
+
     TQRect r;
     if (source->isTopLevel())
     {
@@ -589,10 +620,12 @@ TQColor getKMenuButtonHoverColor()
     return s_cachedButtonHoverColor;
 }
 
-static void colorizeSidebarWorkingImage(TQImage &img, bool on, const TQColor &col)
+static void colorizeSidebarWorkingImage(TQImage &img, bool invert, bool on, const TQColor &col)
 {
+    if (invert)
+        EmbeddedIcons::invertImage(img);
     if (on && col.isValid())
-        EmbeddedIcons::colorizeImage(img, col, true);
+        EmbeddedIcons::colorizeImage(img, col, invert);
 }
 
 TQPixmap getSidebarTilePixmap(int sidebarWidth, int menuHeight)
@@ -615,6 +648,7 @@ TQPixmap getSidebarTilePixmap(int sidebarWidth, int menuHeight)
     int widthMode = config.readNumEntry("SidebarPictureWidthMode", 0); // 0 = Stretch, 1 = Crop
     int alignMode = config.readNumEntry("SidebarPictureAlignMode", 0); // 0 = AlignTop, 1 = AlignBottom
     bool extendEdges = config.readBoolEntry("SidebarPictureExtendEdges", false);
+    bool invert = config.readBoolEntry("SidebarPictureInvert", false);
     bool colorize = config.readBoolEntry("SidebarPictureColorize", false);
     TQColor picColor = TQColor(config.readEntry("SidebarPictureColor",
         TDEGlobalSettings::highlightColor().name()));
@@ -626,6 +660,7 @@ TQPixmap getSidebarTilePixmap(int sidebarWidth, int menuHeight)
                    .arg(sidebarWidth).arg(menuHeight).arg(mode).arg(source)
                    .arg(embName).arg(customPath).arg(widthMode).arg(alignMode)
                    .arg(sidebarBg.name()).arg(extendEdges ? 1 : 0);
+    if (invert) key += "_inv";
     if (colorize && picColor.isValid()) {
         key += "_col";
         key += picColor.name();
@@ -655,7 +690,7 @@ TQPixmap getSidebarTilePixmap(int sidebarWidth, int menuHeight)
         if (widthMode == 0) { // Stretch: scale width to sidebarWidth (proportional height)
             int newH = KMAX(1, (int)((double)h0 * ((double)sidebarWidth / (double)w0)));
             TQImage tileImg = srcImg.smoothScale(sidebarWidth, newH);
-            colorizeSidebarWorkingImage(tileImg, colorize, picColor);
+            colorizeSidebarWorkingImage(tileImg, invert, colorize, picColor);
 
             TQPixmap tile(sidebarWidth, newH);
             tile.fill(sidebarBg);
@@ -668,7 +703,7 @@ TQPixmap getSidebarTilePixmap(int sidebarWidth, int menuHeight)
             s_cachedSidebarTileKey = key;
             return s_cachedSidebarTile;
         } else { // Crop: keep native size, crop/center horizontally
-            colorizeSidebarWorkingImage(srcImg, colorize, picColor);
+            colorizeSidebarWorkingImage(srcImg, invert, colorize, picColor);
             TQPixmap tile(sidebarWidth, h0);
             tile.fill(sidebarBg);
 
@@ -696,7 +731,7 @@ TQPixmap getSidebarTilePixmap(int sidebarWidth, int menuHeight)
             int newH = KMAX(1, (int)(h0 * ratio));
             scaledImg = srcImg.smoothScale(sidebarWidth, newH);
         }
-        colorizeSidebarWorkingImage(scaledImg, colorize, picColor);
+        colorizeSidebarWorkingImage(scaledImg, invert, colorize, picColor);
 
         int drawY = 0;
         if (alignMode == 1) { // Align to bottom

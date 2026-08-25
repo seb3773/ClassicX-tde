@@ -30,6 +30,7 @@ ShowRecentDocs=false
 ShowRunCommand=true
 ShowSidebarDocuments=false
 ShowSidebarImages=false
+ShowSidebarDownloads=false
 ShowSidebarSettings=true
 ShowSidebarShutdownMenu=true
 ShowSidebarUserMenu=false

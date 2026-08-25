@@ -27,6 +27,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <stdlib.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 #include <ksimpleconfig.h>
 #include <tdefiledialog.h>
@@ -192,8 +193,10 @@ PanelKMenu::PanelKMenu()
       m_inEventFilter(false), m_savedRecentCount(0), m_appletButton(0),
       m_currentSessionVt(-1), m_lastTopPicMinute(-1), m_lastSidebarHeight(-1),
       m_lastSidebarWidth(-1), m_lastSidebarIconSize(-1), m_lastSidebarAlign(-1),
+      m_lastSidebarUserOnTop(-1),
       m_inOpeningAnim(false), m_openingAnimStep(0), m_totalOpeningAnimSteps(16),
-      m_openingAnimDistance(160), m_openingAnimTimer(0) {
+      m_openingAnimDistance(160), m_openingAnimDirection(KPanelApplet::Up),
+      m_openingAnimTimer(0), m_hasTopPicMask(false) {
   DCOPObject *prevDCOP = DCOPObject::find("KMenu");
   if (prevDCOP && prevDCOP != static_cast<DCOPObject*>(this)) {
     m_previousKMenuObj = dynamic_cast<TQObject*>(prevDCOP);
@@ -368,6 +371,7 @@ bool PanelKMenu::loadTopPixmap() {
     return false;
   }
 
+  bool invert = config.readBoolEntry("TopPicInvert", false);
   bool colorize = config.readBoolEntry("TopPicColorize", false);
   TQColor topColor = TQColor(config.readEntry(
       "TopPicColor", TDEGlobalSettings::highlightColor().name()));
@@ -389,15 +393,47 @@ bool PanelKMenu::loadTopPixmap() {
       return false;
     }
 
-    if (colorize) {
-      EmbeddedIcons::colorizeImage(imgLeft, topColor, true);
-      EmbeddedIcons::colorizeImage(imgCenter, topColor, true);
-      EmbeddedIcons::colorizeImage(imgRight, topColor, true);
+    if (invert) {
+      EmbeddedIcons::invertImage(imgLeft);
+      EmbeddedIcons::invertImage(imgCenter);
+      EmbeddedIcons::invertImage(imgRight);
     }
 
-    topPixLeft.convertFromImage(imgLeft);
-    topPixCenter.convertFromImage(imgCenter);
-    topPixRight.convertFromImage(imgRight);
+    if (colorize) {
+      EmbeddedIcons::colorizeImage(imgLeft, topColor, invert);
+      EmbeddedIcons::colorizeImage(imgCenter, topColor, invert);
+      EmbeddedIcons::colorizeImage(imgRight, topColor, invert);
+    }
+
+    if (!imgLeft.isNull()) {
+      topPixLeft.convertFromImage(imgLeft);
+      if (imgLeft.hasAlphaBuffer()) {
+        TQBitmap mask;
+        mask.convertFromImage(imgLeft.createAlphaMask());
+        topPixLeft.setMask(mask);
+      }
+    } else
+      topPixLeft = TQPixmap();
+
+    if (!imgCenter.isNull()) {
+      topPixCenter.convertFromImage(imgCenter);
+      if (imgCenter.hasAlphaBuffer()) {
+        TQBitmap mask;
+        mask.convertFromImage(imgCenter.createAlphaMask());
+        topPixCenter.setMask(mask);
+      }
+    } else
+      topPixCenter = TQPixmap();
+
+    if (!imgRight.isNull()) {
+      topPixRight.convertFromImage(imgRight);
+      if (imgRight.hasAlphaBuffer()) {
+        TQBitmap mask;
+        mask.convertFromImage(imgRight.createAlphaMask());
+        topPixRight.setMask(mask);
+      }
+    } else
+      topPixRight = TQPixmap();
   } else if (mode == 2) { // Custom
     TQString leftPath = config.readEntry("TopPicCustomLeft", "");
     TQString centerPath = config.readEntry("TopPicCustomCenter", "");
@@ -413,13 +449,22 @@ bool PanelKMenu::loadTopPixmap() {
       return false;
     }
 
+    if (invert) {
+      if (!imgLeft.isNull())
+        EmbeddedIcons::invertImage(imgLeft);
+      if (!imgCenter.isNull())
+        EmbeddedIcons::invertImage(imgCenter);
+      if (!imgRight.isNull())
+        EmbeddedIcons::invertImage(imgRight);
+    }
+
     if (colorize) {
       if (!imgLeft.isNull())
-        EmbeddedIcons::colorizeImage(imgLeft, topColor, true);
+        EmbeddedIcons::colorizeImage(imgLeft, topColor, invert);
       if (!imgCenter.isNull())
-        EmbeddedIcons::colorizeImage(imgCenter, topColor, true);
+        EmbeddedIcons::colorizeImage(imgCenter, topColor, invert);
       if (!imgRight.isNull())
-        EmbeddedIcons::colorizeImage(imgRight, topColor, true);
+        EmbeddedIcons::colorizeImage(imgRight, topColor, invert);
     }
 
     if (!imgLeft.isNull()) {
@@ -468,6 +513,17 @@ bool PanelKMenu::loadTopPixmap() {
 
 void PanelKMenu::updateTopPicMask() {
   if (topPixHeight <= 0) {
+    m_hasTopPicMask = false;
+    m_baseTopPicMask = TQRegion();
+    clearMask();
+    return;
+  }
+
+  bool hasAlpha = (topPixLeft.mask() != 0 || topPixRight.mask() != 0 || topPixCenter.mask() != 0);
+  m_hasTopPicMask = hasAlpha;
+
+  if (!hasAlpha) {
+    m_baseTopPicMask = TQRegion();
     clearMask();
     return;
   }
@@ -513,6 +569,7 @@ void PanelKMenu::updateTopPicMask() {
     }
   }
 
+  m_baseTopPicMask = maskRegion;
   setMask(maskRegion);
 }
 
@@ -565,8 +622,10 @@ int PanelKMenu::userShutdownPopupHeight() const {
   int targetH = ClassicXSettings::fullUserShutdownMenuHeight()
                     ? height()
                     : ClassicXSettings::customUserShutdownMenuHeight();
-  if (targetH < 250)
-    targetH = 250;
+  if (targetH > height() && height() >= 200)
+    targetH = height();
+  if (targetH < 200)
+    targetH = 200;
   return targetH;
 }
 
@@ -828,6 +887,9 @@ void PanelKMenu::initialize() {
   int floorW = (m_baseContentFloorWidth > 0) ? m_baseContentFloorWidth
                                              : (width() - currentSideW);
   int totalFloorW = floorW + currentSideW;
+  if (ClassicXSettings::menuMinWidth() > 0) {
+    totalFloorW = kMax(totalFloorW, ClassicXSettings::menuMinWidth());
+  }
   if (m_widthBeforeSearch > 0) {
     totalFloorW = kMax(totalFloorW, m_widthBeforeSearch);
   }
@@ -1352,10 +1414,21 @@ void PanelKMenu::resizeEvent(TQResizeEvent *e) {
 
 // Workaround Qt3.3.x sizing bug, by ensuring we're always wide enough.
 void PanelKMenu::resize(int width, int height) {
+  int minW = ClassicXSettings::menuMinWidth();
+  if (minW > 0 && width < minW) {
+    width = minW;
+  }
   PanelServiceMenu::resize(width, height);
 }
 
-TQSize PanelKMenu::sizeHint() const { return PanelServiceMenu::sizeHint(); }
+TQSize PanelKMenu::sizeHint() const {
+  TQSize s = PanelServiceMenu::sizeHint();
+  int minW = ClassicXSettings::menuMinWidth();
+  if (minW > 0 && s.width() < minW) {
+    s.setWidth(minW);
+  }
+  return s;
+}
 
 void PanelKMenu::hideEvent(TQHideEvent *e) {
   if (m_openingAnimTimer) {
@@ -1393,21 +1466,70 @@ void PanelKMenu::hideEvent(TQHideEvent *e) {
 
 void PanelKMenu::showEvent(TQShowEvent *e) {
   PanelServiceMenu::showEvent(e);
+  KickerLib::updateMenuPalette(this);
   if (ClassicXSettings::animateOpening() && !m_inFlatSearchMode) {
     m_inOpeningAnim = true;
     m_openingAnimStep = 0;
     m_totalOpeningAnimSteps = 16;
-    m_openingAnimDistance = (height() < 220) ? (int)((float)height() * 0.75f) : 160;
+
+    if (ClassicXSettings::menuCentered()) {
+      m_openingAnimDirection = KPanelApplet::Up;
+    } else if (m_appletButton) {
+      m_openingAnimDirection = m_appletButton->popupDirection();
+    } else {
+      m_openingAnimDirection = KPanelApplet::Up;
+    }
+
+    if (m_openingAnimDirection == KPanelApplet::Left || m_openingAnimDirection == KPanelApplet::Right) {
+      m_openingAnimDistance = (width() < 220) ? (int)((float)width() * 0.75f) : 160;
+    } else {
+      m_openingAnimDistance = (height() < 220) ? (int)((float)height() * 0.75f) : 160;
+    }
 
     int targetOpacity = ClassicXSettings::classicKMenuOpacity();
     int startOpacity = (int)((float)targetOpacity * 0.20f + 0.5f);
     if (startOpacity < 1) startOpacity = 1;
     ClassicX::applyWindowOpacity(winId(), startOpacity);
 
+    // Apply initial step 0 mask immediately before the window is exposed on screen
+    int drawX = 0, drawY = 0;
+    TQRect clipRect(0, 0, width(), height());
+    switch (m_openingAnimDirection) {
+    case KPanelApplet::Up:
+      drawY = m_openingAnimDistance;
+      clipRect = TQRect(0, m_openingAnimDistance, width(), height() - m_openingAnimDistance);
+      break;
+    case KPanelApplet::Down:
+      drawY = -m_openingAnimDistance;
+      clipRect = TQRect(0, 0, width(), height() - m_openingAnimDistance);
+      break;
+    case KPanelApplet::Right:
+      drawX = -m_openingAnimDistance;
+      clipRect = TQRect(0, 0, width() - m_openingAnimDistance, height());
+      break;
+    case KPanelApplet::Left:
+      drawX = m_openingAnimDistance;
+      clipRect = TQRect(m_openingAnimDistance, 0, width() - m_openingAnimDistance, height());
+      break;
+    }
+
+    if (m_hasTopPicMask && !m_baseTopPicMask.isEmpty()) {
+      TQRegion animMask = m_baseTopPicMask;
+      animMask.translate(drawX, drawY);
+      setMask(animMask.intersect(clipRect));
+    } else {
+      setMask(TQRegion(clipRect));
+    }
+
     m_openingAnimTimer->start(12);
   } else {
     m_inOpeningAnim = false;
     ClassicX::applyWindowOpacity(winId(), ClassicXSettings::classicKMenuOpacity());
+    if (m_hasTopPicMask && !m_baseTopPicMask.isEmpty()) {
+      setMask(m_baseTopPicMask);
+    } else {
+      clearMask();
+    }
   }
 
   if (!m_inFlatSearchMode) {
@@ -1443,9 +1565,11 @@ void PanelKMenu::updateActiveSidebarButtons() {
   int h = height();
   int iconSize = ClassicXSettings::uiIconSize();
   int align = ClassicXSettings::sidebarButtonsAlign();
+  int userOnTop = ClassicXSettings::sidebarUserOnTop() ? 1 : 0;
 
   if (h == m_lastSidebarHeight && sw == m_lastSidebarWidth &&
       iconSize == m_lastSidebarIconSize && align == m_lastSidebarAlign &&
+      userOnTop == m_lastSidebarUserOnTop &&
       !m_activeSidebarButtons.isEmpty()) {
     return;
   }
@@ -1454,6 +1578,7 @@ void PanelKMenu::updateActiveSidebarButtons() {
   m_lastSidebarWidth = sw;
   m_lastSidebarIconSize = iconSize;
   m_lastSidebarAlign = align;
+  m_lastSidebarUserOnTop = userOnTop;
 
   m_activeSidebarButtons.clear();
   int fw = frameWidth();
@@ -1474,12 +1599,11 @@ void PanelKMenu::updateActiveSidebarButtons() {
   int bottomPadding = 10;
   int step = btnHeight + btnGap;
 
-  // Order from bottom to top: Logout (1), Settings (2), Pictures (3), Documents
-  // (4), User (0)
-  int candidates[5] = {1, 2, 3, 4, 0};
+  // Order from bottom to top: Logout (1), Settings (2), Downloads (5), Pictures (3), Documents (4), User (0)
+  int candidates[6] = {1, 2, 5, 3, 4, 0};
   int stackIndex = 0;
 
-  for (int i = 0; i < 5; ++i) {
+  for (int i = 0; i < 6; ++i) {
     int id = candidates[i];
     bool isEnabled = false;
 
@@ -1490,6 +1614,9 @@ void PanelKMenu::updateActiveSidebarButtons() {
       break;
     case 2: // Settings
       isEnabled = ClassicXSettings::showSidebarSettings();
+      break;
+    case 5: // Downloads
+      isEnabled = ClassicXSettings::showSidebarDownloads();
       break;
     case 3: // Pictures / Images
       isEnabled = ClassicXSettings::showSidebarImages();
@@ -1506,9 +1633,15 @@ void PanelKMenu::updateActiveSidebarButtons() {
     if (isEnabled) {
       SidebarBtn btn;
       btn.id = id;
-      btn.rect = TQRect(
-          fw, height() - fw - bottomPadding - btnHeight - step * stackIndex, sw,
-          btnHeight);
+      if (id == 0 && userOnTop) {
+        int topH = (topPixHeight > 0) ? topPixHeight : 0;
+        btn.rect = TQRect(fw, fw + topH + 10, sw, btnHeight);
+      } else {
+        btn.rect = TQRect(
+            fw, height() - fw - bottomPadding - btnHeight - step * stackIndex, sw,
+            btnHeight);
+        stackIndex++;
+      }
       switch (id) {
       case 0:
         btn.icon = EmbeddedIcons::getSmallIcon("switchuser", iconSize);
@@ -1520,6 +1653,10 @@ void PanelKMenu::updateActiveSidebarButtons() {
       case 2:
         btn.icon =
             EmbeddedIcons::getPixmap("menu-settings", iconSize, iconSize);
+        break;
+      case 5:
+        btn.icon =
+            EmbeddedIcons::getPixmap("menu-downloads", iconSize, iconSize);
         break;
       case 3:
         btn.icon = EmbeddedIcons::getPixmap("menu-images", iconSize, iconSize);
@@ -1541,14 +1678,40 @@ void PanelKMenu::updateActiveSidebarButtons() {
       btn.iconPos = TQPoint(btn.rect.x() + iconOffX, btn.rect.y() + iconOffY);
 
       m_activeSidebarButtons.append(btn);
-      stackIndex++;
     }
   }
+}
+
+static TQString getFreeRamString() {
+  int fd = open("/proc/meminfo", O_RDONLY);
+  if (fd >= 0) {
+    char buf[512];
+    ssize_t n = read(fd, buf, sizeof(buf) - 1);
+    close(fd);
+    if (n > 0) {
+      buf[n] = '\0';
+      const char *p = strstr(buf, "MemAvailable:");
+      if (!p)
+        p = strstr(buf, "MemFree:");
+      if (p) {
+        const char *numPtr = p;
+        while (*numPtr && (*numPtr < '0' || *numPtr > '9'))
+          numPtr++;
+        unsigned long kb = 0;
+        if (sscanf(numPtr, "%lu", &kb) == 1 && kb > 0) {
+          double gb = (double)kb / 1048576.0;
+          return TQString("RAM: %1 GB").arg(TQString::number(gb, 'f', 1));
+        }
+      }
+    }
+  }
+  return TQString::null;
 }
 
 void PanelKMenu::drawMenu(TQPainter *p, const TQRect &clipRect) {
   if (!p) return;
 
+  p->setFont(font());
   TQColor bgColor = KickerLib::getClassicKMenuBgColor();
 
   style().drawPrimitive(TQStyle::PE_PanelPopup, p,
@@ -1611,6 +1774,8 @@ void PanelKMenu::drawMenu(TQPainter *p, const TQRect &clipRect) {
         if (ClassicXSettings::topPicShowCustomText() &&
             !ClassicXSettings::topPicText().isEmpty())
           activeCount++;
+        if (ClassicXSettings::topPicShowRam())
+          activeCount++;
         if (ClassicXSettings::topPicShowDate())
           activeCount++;
         if (ClassicXSettings::topPicShowTime())
@@ -1631,6 +1796,11 @@ void PanelKMenu::drawMenu(TQPainter *p, const TQRect &clipRect) {
         if (ClassicXSettings::topPicShowCustomText() &&
             !ClassicXSettings::topPicText().isEmpty()) {
           parts.append(ClassicXSettings::topPicText());
+        }
+        if (ClassicXSettings::topPicShowRam()) {
+          TQString ramStr = getFreeRamString();
+          if (!ramStr.isEmpty())
+            parts.append(ramStr);
         }
         if (ClassicXSettings::topPicShowDate()) {
           bool useShortFormat = (activeCount > 1);
@@ -1664,7 +1834,14 @@ void PanelKMenu::drawMenu(TQPainter *p, const TQRect &clipRect) {
                         : KickerLib::getMenuTitleFgColor();
         }
         p->setPen(textCol);
-        p->drawText(textRect, AlignCenter | SingleLine, m_cachedTopPicTitle);
+        int alignFlag = AlignVCenter | AlignHCenter | SingleLine;
+        int alignSetting = ClassicXSettings::topPicTextAlign();
+        if (alignSetting == 1) {
+          alignFlag = AlignVCenter | AlignLeft | SingleLine;
+        } else if (alignSetting == 2) {
+          alignFlag = AlignVCenter | AlignRight | SingleLine;
+        }
+        p->drawText(textRect, alignFlag, m_cachedTopPicTitle);
         p->restore();
       }
     }
@@ -1689,7 +1866,46 @@ void PanelKMenu::paintEvent(TQPaintEvent *e) {
     float t = (float)m_openingAnimStep / (float)m_totalOpeningAnimSteps;
     if (t > 1.0f) t = 1.0f;
     float factor = 1.0f - (1.0f - t) * (1.0f - t) * (1.0f - t);
-    int yOffset = (int)((1.0f - factor) * (float)m_openingAnimDistance + 0.5f);
+    int offset = (int)((1.0f - factor) * (float)m_openingAnimDistance + 0.5f);
+
+    int drawX = 0;
+    int drawY = 0;
+    TQRect clipRect(0, 0, width(), height());
+
+    switch (m_openingAnimDirection) {
+    case KPanelApplet::Up: // Bottom panel: slide UP from bottom
+      drawY = offset;
+      clipRect = TQRect(0, offset, width(), height() - offset);
+      break;
+    case KPanelApplet::Down: // Top panel: slide DOWN from top
+      drawY = -offset;
+      clipRect = TQRect(0, 0, width(), height() - offset);
+      break;
+    case KPanelApplet::Right: // Left panel: slide RIGHT from left
+      drawX = -offset;
+      clipRect = TQRect(0, 0, width() - offset, height());
+      break;
+    case KPanelApplet::Left: // Right panel: slide LEFT from right
+      drawX = offset;
+      clipRect = TQRect(offset, 0, width() - offset, height());
+      break;
+    }
+
+    if (m_hasTopPicMask && !m_baseTopPicMask.isEmpty()) {
+      TQRegion animMask = m_baseTopPicMask;
+      if (offset > 0) {
+        animMask.translate(drawX, drawY);
+        setMask(animMask.intersect(clipRect));
+      } else {
+        setMask(m_baseTopPicMask);
+      }
+    } else {
+      if (offset > 0) {
+        setMask(TQRegion(clipRect));
+      } else {
+        clearMask();
+      }
+    }
 
     TQPixmap buf(size());
     buf.fill(KickerLib::getClassicKMenuBgColor());
@@ -1698,10 +1914,16 @@ void PanelKMenu::paintEvent(TQPaintEvent *e) {
     bp.end();
 
     TQPainter p(this);
-    p.setClipRect(0, yOffset, width(), height() - yOffset);
-    p.drawPixmap(0, yOffset, buf);
+    if (offset > 0) {
+      p.setClipRect(clipRect);
+    }
+    p.drawPixmap(drawX, drawY, buf);
 
-    setMask(TQRegion(0, yOffset, width(), height() - yOffset));
+    if (m_openingAnimStep >= m_totalOpeningAnimSteps) {
+      m_inOpeningAnim = false;
+      m_openingAnimTimer->stop();
+      ClassicX::applyWindowOpacity(winId(), ClassicXSettings::classicKMenuOpacity());
+    }
     return;
   }
 
@@ -1884,7 +2106,13 @@ void PanelKMenu::mousePressEvent(TQMouseEvent *e) {
             } else {
               int targetH = userShutdownPopupHeight();
               TQPoint mainPos = mapToGlobal(TQPoint(0, 0));
-              int popY = mainPos.y() + height() - targetH;
+              int popY;
+              if (ClassicXSettings::fullUserShutdownMenuHeight() ||
+                  ClassicXSettings::sidebarUserOnTop()) {
+                popY = mainPos.y();
+              } else {
+                popY = mainPos.y() + height() - targetH;
+              }
               TQPoint pos(mapToGlobal((*it).rect.topRight()).x() - 6, popY);
               sessionsMenu->popup(pos);
             }
@@ -1903,7 +2131,12 @@ void PanelKMenu::mousePressEvent(TQMouseEvent *e) {
             } else {
               int targetH = userShutdownPopupHeight();
               TQPoint mainPos = mapToGlobal(TQPoint(0, 0));
-              int popY = mainPos.y() + height() - targetH;
+              int popY;
+              if (ClassicXSettings::fullUserShutdownMenuHeight()) {
+                popY = mainPos.y();
+              } else {
+                popY = mainPos.y() + height() - targetH;
+              }
               TQPoint pos(mapToGlobal((*it).rect.topRight()).x() - 6, popY);
               logoutMenu->popup(pos);
             }
@@ -1936,6 +2169,16 @@ void PanelKMenu::mousePressEvent(TQMouseEvent *e) {
           new KRun(KURL(TDEGlobalSettings::documentPath()));
           hide();
           return;
+        case 5: // Downloads
+          {
+            TQString dlPath = TDEGlobalSettings::downloadPath();
+            if (dlPath.isEmpty() || !TQDir(dlPath).exists()) {
+              dlPath = TQDir::homeDirPath() + "/Downloads";
+            }
+            new KRun(KURL(dlPath));
+            hide();
+            return;
+          }
         }
       }
     }
@@ -2424,19 +2667,35 @@ static TQPoint placePopupAgainstPanel(TQWidget *popup, ClassicXButton *btn)
   TQPoint p = popup->pos();
   if (btn && btn->topLevelWidget()) {
     TQWidget *panel = btn->topLevelWidget();
-    switch (btn->popupDirection()) {
-    case KPanelApplet::Up:
-      p.setY(panel->y() - popup->height());
-      break;
-    case KPanelApplet::Down:
-      p.setY(panel->y() + panel->height());
-      break;
-    case KPanelApplet::Left:
-      p.setX(panel->x() - popup->width());
-      break;
-    case KPanelApplet::Right:
-      p.setX(panel->x() + panel->width());
-      break;
+    if (ClassicXSettings::menuCentered()) {
+      TQDesktopWidget *desktop = TQApplication::desktop();
+      int scrNum = desktop->screenNumber(popup);
+      TQRect screen = desktop->screenGeometry(scrNum);
+      TQRect ag = desktop->availableGeometry(scrNum);
+
+      int x = screen.left() + (screen.width() - popup->width()) / 2;
+      int y;
+      if (btn->popupDirection() == KPanelApplet::Up) {
+        y = panel->y() - popup->height();
+      } else {
+        y = ag.bottom() - popup->height() + 1;
+      }
+      p = TQPoint(x, y);
+    } else {
+      switch (btn->popupDirection()) {
+      case KPanelApplet::Up:
+        p.setY(panel->y() - popup->height());
+        break;
+      case KPanelApplet::Down:
+        p.setY(panel->y() + panel->height());
+        break;
+      case KPanelApplet::Left:
+        p.setX(panel->x() - popup->width());
+        break;
+      case KPanelApplet::Right:
+        p.setX(panel->x() + panel->width());
+        break;
+      }
     }
   }
   return clampPopupToWorkArea(popup, p);
@@ -2785,7 +3044,8 @@ void PanelKMenu::slotUpdateSearch(const TQString &searchString) {
                   : ((m_mainMenuSize.isValid() && m_mainMenuSize.width() > 100)
                          ? m_mainMenuSize.width()
                          : sizeHint().width());
-  int searchW = (int)(baseW * 1.5);
+  int minW = ClassicXSettings::menuMinWidth();
+  int searchW = (minW > 0) ? kMax(baseW, minW) : (int)(baseW * 1.5);
   setFixedWidth(searchW);
 
   if (searchVis) {
@@ -2821,15 +3081,6 @@ void PanelKMenu::slotOpeningAnimStep() {
   }
 
   m_openingAnimStep++;
-
-  if (m_openingAnimStep >= m_totalOpeningAnimSteps) {
-    m_inOpeningAnim = false;
-    m_openingAnimTimer->stop();
-    ClassicX::applyWindowOpacity(winId(), ClassicXSettings::classicKMenuOpacity());
-    updateTopPicMask();
-    repaint(false);
-    return;
-  }
 
   float t = (float)m_openingAnimStep / (float)m_totalOpeningAnimSteps;
   if (t > 1.0f) t = 1.0f;
@@ -2963,6 +3214,7 @@ void PanelKMenu::slotReinitialize() {
   }
   m_inFlatSearchMode = false;
   m_widthBeforeSearch = 0;
+  m_baseContentFloorWidth = 0;
   m_mainMenuSize = TQSize();
   m_mainMenuPos = TQPoint();
   m_savedRecentCount = -1;
@@ -2970,6 +3222,7 @@ void PanelKMenu::slotReinitialize() {
   // User/Shutdown popups keep TQt3 size caches (maxPMWidth, setFixedHeight)
   // across settings OK. Recreate them like a fresh applet start.
   resetSidebarPopups();
+  m_lastSidebarHeight = -1;
   loadSidePixmap();
   setInitialized(false);
   setMinimumSize(0, 0);
@@ -3113,7 +3366,13 @@ void PanelKMenu::slotSidebarPopupHoverTimeout() {
       if (sessionsMenu) {
         int targetH = userShutdownPopupHeight();
         TQPoint mainPos = mapToGlobal(TQPoint(0, 0));
-        int popY = mainPos.y() + height() - targetH;
+        int popY;
+        if (ClassicXSettings::fullUserShutdownMenuHeight() ||
+            ClassicXSettings::sidebarUserOnTop()) {
+          popY = mainPos.y();
+        } else {
+          popY = mainPos.y() + height() - targetH;
+        }
         TQPoint pos(mapToGlobal(targetRect.topRight()).x() - 6, popY);
         sessionsMenu->popup(pos);
       }
@@ -3123,7 +3382,12 @@ void PanelKMenu::slotSidebarPopupHoverTimeout() {
       if (logoutMenu) {
         int targetH = userShutdownPopupHeight();
         TQPoint mainPos = mapToGlobal(TQPoint(0, 0));
-        int popY = mainPos.y() + height() - targetH;
+        int popY;
+        if (ClassicXSettings::fullUserShutdownMenuHeight()) {
+          popY = mainPos.y();
+        } else {
+          popY = mainPos.y() + height() - targetH;
+        }
         TQPoint pos(mapToGlobal(targetRect.topRight()).x() - 6, popY);
         logoutMenu->popup(pos);
       }

@@ -17,6 +17,16 @@
       <max>80</max>
    </entry>
 
+   <entry name="MenuMinWidth" type="Int" >
+      <label>Minimum width of the main menu in pixels (0 for auto)</label>
+      <default>0</default>
+   </entry>
+
+   <entry name="MenuCentered" type="Bool" >
+      <label>Center main menu horizontally on screen</label>
+      <default>false</default>
+   </entry>
+
 <entry name="ShowControlCenter" type="Bool" >
       <label>Show Trinity Control Center button on sidebar</label>
       <default>true</default>
@@ -402,6 +412,21 @@
         <default>false</default>
     </entry>
 
+    <entry name="SidebarPictureInvert" type="Bool" >
+        <label>Invert sidebar picture</label>
+        <default>false</default>
+    </entry>
+
+    <entry name="SidebarPictureColorize" type="Bool" >
+        <label>Colorize sidebar picture</label>
+        <default>false</default>
+    </entry>
+
+    <entry name="SidebarPictureColor" type="Color" >
+        <label>Color used to colorize sidebar picture</label>
+        <default code="true">TDEGlobalSettings::highlightColor()</default>
+    </entry>
+
     <entry name="TopPicMode" type="Enum" >
         <choices>
             <choice name="None">
@@ -436,6 +461,11 @@
     <entry name="TopPicCustomRight" type="String" >
         <label>Custom top picture right file path</label>
         <default></default>
+    </entry>
+
+    <entry name="TopPicInvert" type="Bool" >
+        <label>Invert top picture</label>
+        <default>false</default>
     </entry>
 
     <entry name="TopPicColorize" type="Bool" >
@@ -476,6 +506,16 @@
     <entry name="TopPicTextColor" type="Color" >
         <label>Custom text color on top picture</label>
         <default code="true">TQColor()</default>
+    </entry>
+
+    <entry name="TopPicTextAlign" type="Int" >
+        <label>Top picture text alignment (0 = Center, 1 = Left, 2 = Right)</label>
+        <default>0</default>
+    </entry>
+
+    <entry name="TopPicShowRam" type="Bool" >
+        <label>Show free RAM portion on top picture</label>
+        <default>false</default>
     </entry>
 
     <entry name="TopPicShowDate" type="Bool" >
@@ -523,6 +563,16 @@
       <default>true</default>
    </entry>
 
+   <entry name="ShowSidebarDownloads" type="Bool" >
+      <label>Show Downloads button on sidebar</label>
+      <default>false</default>
+   </entry>
+
+   <entry name="SidebarUserOnTop" type="Bool" >
+      <label>Place User button at the top of the sidebar</label>
+      <default>false</default>
+   </entry>
+
    <entry name="ShowShutdownPowerOff" type="Bool" >
       <label>Show Shut down in Shutdown menu</label>
       <default>true</default>
@@ -546,6 +596,36 @@
    <entry name="ShowShutdownHibernate" type="Bool" >
       <label>Show Hibernate in Shutdown menu</label>
       <default>true</default>
+   </entry>
+
+   <entry name="UserPicMode" type="Int" >
+      <label>User Picture Mode (0=TDE, 1=Embedded, 2=Custom)</label>
+      <default>0</default>
+   </entry>
+
+   <entry name="UserPicEmbedded" type="String" >
+      <label>Embedded User Picture Name</label>
+      <default>classic</default>
+   </entry>
+
+   <entry name="UserPicCustomPath" type="String" >
+      <label>Custom User Picture Path</label>
+      <default></default>
+   </entry>
+
+   <entry name="InvertUserPic" type="Bool" >
+      <label>Invert User Picture</label>
+      <default>false</default>
+   </entry>
+
+   <entry name="ColorizeUserPic" type="Bool" >
+      <label>Colorize User Picture</label>
+      <default>false</default>
+   </entry>
+
+   <entry name="UserPicColor" type="Color" >
+      <label>User Picture Color</label>
+      <default>#000000</default>
    </entry>
 
    <entry name="ShowRecentApps" type="Bool" >
@@ -821,6 +901,18 @@
       <default>0</default>
     </entry>
     <entry name="ImagesCustomIconPath" type="String">
+      <default></default>
+    </entry>
+    <entry name="DownloadsIconType" type="Int">
+      <default>0</default>
+    </entry>
+    <entry name="DownloadsCustomIconPath" type="String">
+      <default></default>
+    </entry>
+    <entry name="LockScreenIconType" type="Int">
+      <default>0</default>
+    </entry>
+    <entry name="LockScreenCustomIconPath" type="String">
       <default></default>
     </entry>
     <entry name="SettingsIconType" type="Int">

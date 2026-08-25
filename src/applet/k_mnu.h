@@ -29,6 +29,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <tqpixmap.h>
 #include <tqtimer.h>
 #include <tqguardedptr.h>
+#include <kpanelapplet.h>
 
 class ClassicXButton;
 
@@ -208,6 +209,7 @@ private:
     int                         m_lastSidebarWidth;
     int                         m_lastSidebarIconSize;
     int                         m_lastSidebarAlign;
+    int                         m_lastSidebarUserOnTop;
 
     // Bools grouped together to minimize struct padding
     volatile bool               windowTimerTimedOut; // Must be volatile to prevent -O2 infinite loop
@@ -231,7 +233,7 @@ private:
 
 protected:
     struct SidebarBtn {
-        int id; // 0=User, 1=Logout, 2=Settings, 3=Pictures, 4=Documents
+        int id; // 0=User, 1=Logout, 2=Settings, 3=Pictures, 4=Documents, 5=Downloads
         TQRect rect;
         TQPixmap icon;
         TQPoint iconPos;
@@ -260,7 +262,10 @@ private:
     int      m_openingAnimStep;
     int      m_totalOpeningAnimSteps;
     int      m_openingAnimDistance;
+    KPanelApplet::Direction m_openingAnimDirection;
     TQTimer *m_openingAnimTimer;
+    bool     m_hasTopPicMask;
+    TQRegion m_baseTopPicMask;
 };
 
 #endif

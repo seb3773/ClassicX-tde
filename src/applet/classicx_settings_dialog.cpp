@@ -30,6 +30,7 @@
 #include <tqtooltip.h>
 #include <tqinputdialog.h>
 #include <tqmap.h>
+#include <tqwidgetstack.h>
 
 #include <tdeapplication.h>
 #include <tdeconfig.h>
@@ -110,14 +111,18 @@ static int treeIconComboIndexToHeight(int idx)
     }
 }
 
-// Stored *IconType: 0 = Win (legacy embedded), 1 = Custom (legacy), 2 = KDE.
-// Combo order: 0 = Win, 1 = KDE, 2 = Custom.
+// Stored *IconType: 0 = Win (legacy embedded), 1 = Custom (legacy), 2 = KDE, 3 = Alt, 4 = Alt2.
+// Combo order: 0 = Win, 1 = KDE, 2 = Alt, 3 = Alt2, 4 = Custom.
 static int uiIconComboIndex(int storedType)
 {
     if (storedType == 2)
         return 1;
-    if (storedType == 1)
+    if (storedType == 3)
         return 2;
+    if (storedType == 4)
+        return 3;
+    if (storedType == 1)
+        return 4;
     return 0;
 }
 
@@ -126,6 +131,10 @@ static int uiIconStoredType(int comboIndex)
     if (comboIndex == 1)
         return 2;
     if (comboIndex == 2)
+        return 3;
+    if (comboIndex == 3)
+        return 4;
+    if (comboIndex == 4)
         return 1;
     return 0;
 }
@@ -141,7 +150,9 @@ static int uiIconTypeFromSettings(int index)
     case 5: return ClassicXSettings::hybridSleepIconType();
     case 6: return ClassicXSettings::documentsIconType();
     case 7: return ClassicXSettings::imagesIconType();
-    case 8: return ClassicXSettings::settingsIconType();
+    case 8: return ClassicXSettings::downloadsIconType();
+    case 9: return ClassicXSettings::lockScreenIconType();
+    case 10: return ClassicXSettings::settingsIconType();
     default: return 0;
     }
 }
@@ -324,9 +335,16 @@ ClassicXSettingsDialog::ClassicXSettingsDialog(TQWidget* parent)
     hBoxFormat->addStretch(1);
     leftCol->addLayout(hBoxFormat);
 
+    TQHBoxLayout *hBoxAppIconsSearch = new TQHBoxLayout();
     m_chkShowAppIcons = new TQCheckBox("Show application icons", this);
     m_chkShowAppIcons->setChecked(ClassicXSettings::showAppIcons());
-    leftCol->addWidget(m_chkShowAppIcons);
+    m_chkAlwaysShowSearchBar = new TQCheckBox("Show search field", this);
+    m_chkAlwaysShowSearchBar->setChecked(ClassicXSettings::alwaysShowSearchBar());
+    hBoxAppIconsSearch->addWidget(m_chkShowAppIcons);
+    hBoxAppIconsSearch->addSpacing(16);
+    hBoxAppIconsSearch->addWidget(m_chkAlwaysShowSearchBar);
+    hBoxAppIconsSearch->addStretch(1);
+    leftCol->addLayout(hBoxAppIconsSearch);
 
     TQHBoxLayout *hBoxTreeIcon = new TQHBoxLayout();
     m_lblTreeIconSize = new TQLabel("Application icon size:", this);
@@ -344,16 +362,47 @@ ClassicXSettingsDialog::ClassicXSettingsDialog(TQWidget* parent)
     hBoxTreeIcon->addStretch();
     leftCol->addLayout(hBoxTreeIcon);
 
-    TQHBoxLayout *hBoxAnimSearch = new TQHBoxLayout();
+    TQHBoxLayout *hBoxAnimCenter = new TQHBoxLayout();
     m_chkAnimateOpening = new TQCheckBox("Animate opening", this);
     m_chkAnimateOpening->setChecked(ClassicXSettings::animateOpening());
-    m_chkAlwaysShowSearchBar = new TQCheckBox("Show search field", this);
-    m_chkAlwaysShowSearchBar->setChecked(ClassicXSettings::alwaysShowSearchBar());
-    hBoxAnimSearch->addWidget(m_chkAnimateOpening);
-    hBoxAnimSearch->addSpacing(16);
-    hBoxAnimSearch->addWidget(m_chkAlwaysShowSearchBar);
-    hBoxAnimSearch->addStretch(1);
-    leftCol->addLayout(hBoxAnimSearch);
+    m_chkMenuCentered = new TQCheckBox("Bottom centered", this);
+    m_chkMenuCentered->setChecked(ClassicXSettings::menuCentered());
+    hBoxAnimCenter->addWidget(m_chkAnimateOpening);
+    hBoxAnimCenter->addSpacing(16);
+    hBoxAnimCenter->addWidget(m_chkMenuCentered);
+    hBoxAnimCenter->addStretch(1);
+    leftCol->addLayout(hBoxAnimCenter);
+
+    TQHBoxLayout *hBoxMinWidth = new TQHBoxLayout();
+    m_lblMenuWidthMode = new TQLabel("Min Width:", this);
+    m_cmbMenuWidthMode = new TQComboBox(false, this);
+    m_cmbMenuWidthMode->insertItem("Auto");
+    m_cmbMenuWidthMode->insertItem("Custom");
+    m_cmbMenuWidthMode->setSizePolicy(TQSizePolicy::Fixed, TQSizePolicy::Fixed);
+
+    int screenMaxW = TQApplication::desktop()->width();
+    if (screenMaxW < 800) screenMaxW = 1920;
+    m_spinMenuMinWidth = new TQSpinBox(150, screenMaxW, 10, this);
+    m_spinMenuMinWidth->setSuffix(" px");
+
+    int savedVal = ClassicXSettings::menuMinWidth();
+    if (savedVal > 0) {
+        m_cmbMenuWidthMode->setCurrentItem(1);
+        m_spinMenuMinWidth->setEnabled(true);
+        m_spinMenuMinWidth->setValue(savedVal);
+    } else {
+        m_cmbMenuWidthMode->setCurrentItem(0);
+        m_spinMenuMinWidth->setEnabled(false);
+        m_spinMenuMinWidth->setValue(280);
+    }
+
+    hBoxMinWidth->addWidget(m_lblMenuWidthMode);
+    hBoxMinWidth->addWidget(m_cmbMenuWidthMode);
+    hBoxMinWidth->addSpacing(8);
+    hBoxMinWidth->addWidget(m_spinMenuMinWidth);
+    hBoxMinWidth->addStretch(1);
+    leftCol->addLayout(hBoxMinWidth);
+
     onShowAppIconsToggled(m_chkShowAppIcons->isChecked());
     leftCol->addSpacing(8);
 
@@ -457,7 +506,7 @@ ClassicXSettingsDialog::ClassicXSettingsDialog(TQWidget* parent)
     m_lblMaxRecentDocs->setEnabled(recentDocsEnabled);
     m_spinMaxRecentDocs->setEnabled(recentDocsEnabled);
 
-    m_lblMaxSearchResults = new TQLabel("Max. Search results", this);
+    m_lblMaxSearchResults = new TQLabel("Maximum number of search results", this);
     int maxSearchResults = ClassicXSettings::maxSearchResults();
     if (maxSearchResults < 1) maxSearchResults = 1;
     if (maxSearchResults > 30) maxSearchResults = 30;
@@ -629,35 +678,37 @@ ClassicXSettingsDialog::ClassicXSettingsDialog(TQWidget* parent)
     hBoxPicMode->addWidget(m_cmbSidebarPicMode);
     col4->addLayout(hBoxPicMode);
 
-    TQButtonGroup *bgPicSource = new TQButtonGroup(this);
-    bgPicSource->hide();
-    m_rbPicEmbedded = new TQRadioButton("Embedded", this);
-    m_rbPicCustom = new TQRadioButton("Custom", this);
-    bgPicSource->insert(m_rbPicEmbedded, 0);
-    bgPicSource->insert(m_rbPicCustom, 1);
-    if (sbPicSource == 0) m_rbPicEmbedded->setChecked(true);
-    else m_rbPicCustom->setChecked(true);
+    m_cmbSidebarPicSource = new TQComboBox(false, this);
+    m_cmbSidebarPicSource->insertItem("Embedded");
+    m_cmbSidebarPicSource->insertItem("Custom");
+    m_cmbSidebarPicSource->setCurrentItem(sbPicSource == 1 ? 1 : 0);
+    m_cmbSidebarPicSource->setSizePolicy(TQSizePolicy(TQSizePolicy::Fixed, TQSizePolicy::Fixed));
 
-    m_cmbPicEmbedded = new TQComboBox(false, this);
+    m_sidebarPicSourceStack = new TQWidgetStack(this);
+
+    m_cmbPicEmbedded = new TQComboBox(false, m_sidebarPicSourceStack);
     TQStringList patternList = (sbPicMode == 2) ? EmbeddedIcons::getSidebarPictureNames() : EmbeddedIcons::getSidebarPatternNames();
     for (TQStringList::ConstIterator it = patternList.begin(); it != patternList.end(); ++it) {
         m_cmbPicEmbedded->insertItem(*it);
     }
     int embIndex = patternList.findIndex(sbPicEmb);
     if (embIndex >= 0) m_cmbPicEmbedded->setCurrentItem(embIndex);
+    m_sidebarPicSourceStack->addWidget(m_cmbPicEmbedded, 0);
 
-    m_btnBrowseCustomPic = new TQPushButton("Browse...", this);
+    TQWidget *customPicPage = new TQWidget(m_sidebarPicSourceStack);
+    TQHBoxLayout *customPicLayout = new TQHBoxLayout(customPicPage);
+    customPicLayout->setMargin(0);
+    m_btnBrowseCustomPic = new TQPushButton(i18n("Browse..."), customPicPage);
+    m_btnBrowseCustomPic->setSizePolicy(TQSizePolicy(TQSizePolicy::Fixed, TQSizePolicy::Fixed));
+    customPicLayout->addWidget(m_btnBrowseCustomPic);
+    customPicLayout->addStretch(1);
+    m_sidebarPicSourceStack->addWidget(customPicPage, 1);
 
-    TQHBoxLayout *hBoxPicEmb = new TQHBoxLayout();
-    hBoxPicEmb->addWidget(m_rbPicEmbedded);
-    hBoxPicEmb->addWidget(m_cmbPicEmbedded);
+    TQHBoxLayout *hBoxPicSource = new TQHBoxLayout();
+    hBoxPicSource->addWidget(m_cmbSidebarPicSource);
+    hBoxPicSource->addWidget(m_sidebarPicSourceStack);
 
-    TQHBoxLayout *hBoxPicCust = new TQHBoxLayout();
-    hBoxPicCust->addWidget(m_rbPicCustom);
-    hBoxPicCust->addWidget(m_btnBrowseCustomPic);
-
-    col4->addLayout(hBoxPicEmb);
-    col4->addLayout(hBoxPicCust);
+    col4->addLayout(hBoxPicSource);
 
     TQButtonGroup *bgPicWidth = new TQButtonGroup(this);
     bgPicWidth->hide();
@@ -689,28 +740,35 @@ ClassicXSettingsDialog::ClassicXSettingsDialog(TQWidget* parent)
     bool sbPicExtendEdges = config.readBoolEntry("SidebarPictureExtendEdges", false);
     m_chkSidebarPicExtendEdges->setChecked(sbPicExtendEdges);
 
+    bool sbPicInvert = config.readBoolEntry("SidebarPictureInvert", false);
     bool sbPicColorize = config.readBoolEntry("SidebarPictureColorize", false);
     m_sidebarPicColor = TQColor(config.readEntry("SidebarPictureColor",
         TDEGlobalSettings::highlightColor().name()));
     if (!m_sidebarPicColor.isValid())
         m_sidebarPicColor = TDEGlobalSettings::highlightColor();
 
-    TQHBoxLayout *hBoxSbPicColorize = new TQHBoxLayout();
+    TQHBoxLayout *hBoxSbPicOptions = new TQHBoxLayout();
+    m_chkSidebarPicInvert = new TQCheckBox("Invert", this);
+    m_chkSidebarPicInvert->setChecked(sbPicInvert);
+    hBoxSbPicOptions->addWidget(m_chkSidebarPicInvert);
+    hBoxSbPicOptions->addSpacing(12);
+
     m_chkSidebarPicColorize = new TQCheckBox("Colorize", this);
     m_chkSidebarPicColorize->setChecked(sbPicColorize);
-    hBoxSbPicColorize->addWidget(m_chkSidebarPicColorize);
-    hBoxSbPicColorize->addSpacing(8);
+    hBoxSbPicOptions->addWidget(m_chkSidebarPicColorize);
+    hBoxSbPicOptions->addSpacing(6);
+
     m_btnSidebarPicColor = new TQPushButton("", this);
     m_btnSidebarPicColor->setFixedSize(30, 22);
     updateColorButton(m_btnSidebarPicColor, m_sidebarPicColor);
     m_btnSidebarPicColor->setEnabled(sbPicColorize && sbPicMode != 0);
-    hBoxSbPicColorize->addWidget(m_btnSidebarPicColor);
-    hBoxSbPicColorize->addStretch(1);
+    hBoxSbPicOptions->addWidget(m_btnSidebarPicColor);
+    hBoxSbPicOptions->addStretch(1);
 
     col4->addLayout(hBoxWidthMode);
     col4->addLayout(hBoxAlignMode);
     col4->addWidget(m_chkSidebarPicExtendEdges);
-    col4->addLayout(hBoxSbPicColorize);
+    col4->addLayout(hBoxSbPicOptions);
 
     col4->addSpacing(12);
 
@@ -722,7 +780,7 @@ ClassicXSettingsDialog::ClassicXSettingsDialog(TQWidget* parent)
     TQString topPicEmb = config.readEntry("TopPicEmbedded", "Royal");
     m_topPicLeftPath = config.readEntry("TopPicCustomLeft", "");
     m_topPicCenterPath = config.readEntry("TopPicCustomCenter", "");
-    m_topPicRightPath = config.readEntry("TopPicCustomRight", "");
+    bool topPicInvert = config.readBoolEntry("TopPicInvert", false);
     bool topPicColorize = config.readBoolEntry("TopPicColorize", false);
 
     TQHBoxLayout *hBoxTopMode = new TQHBoxLayout();
@@ -756,30 +814,35 @@ ClassicXSettingsDialog::ClassicXSettingsDialog(TQWidget* parent)
 
     topCustomGrid->addWidget(new TQLabel("Left part:", this), 0, 0);
     m_lblTopPicLeftPath = new TQLabel(m_topPicLeftPath.isEmpty() ? "None" : m_topPicLeftPath.section('/', -1), this);
-    m_btnBrowseTopPicLeft = new TQPushButton("Browse...", this);
+    m_btnBrowseTopPicLeft = new TQPushButton(i18n("Browse..."), this);
     topCustomGrid->addWidget(m_lblTopPicLeftPath, 0, 1);
     topCustomGrid->addWidget(m_btnBrowseTopPicLeft, 0, 2);
 
     topCustomGrid->addWidget(new TQLabel("Center part:", this), 1, 0);
     m_lblTopPicCenterPath = new TQLabel(m_topPicCenterPath.isEmpty() ? "None" : m_topPicCenterPath.section('/', -1), this);
-    m_btnBrowseTopPicCenter = new TQPushButton("Browse...", this);
+    m_btnBrowseTopPicCenter = new TQPushButton(i18n("Browse..."), this);
     topCustomGrid->addWidget(m_lblTopPicCenterPath, 1, 1);
     topCustomGrid->addWidget(m_btnBrowseTopPicCenter, 1, 2);
 
     topCustomGrid->addWidget(new TQLabel("Right part:", this), 2, 0);
     m_lblTopPicRightPath = new TQLabel(m_topPicRightPath.isEmpty() ? "None" : m_topPicRightPath.section('/', -1), this);
-    m_btnBrowseTopPicRight = new TQPushButton("Browse...", this);
+    m_btnBrowseTopPicRight = new TQPushButton(i18n("Browse..."), this);
     topCustomGrid->addWidget(m_lblTopPicRightPath, 2, 1);
     topCustomGrid->addWidget(m_btnBrowseTopPicRight, 2, 2);
 
     col4->addLayout(topCustomGrid);
     col4->addSpacing(4);
 
-    TQHBoxLayout *hBoxTopColorize = new TQHBoxLayout();
-    m_chkTopPicColorize = new TQCheckBox("Colorize top picture", this);
+    TQHBoxLayout *hBoxTopPicOptions = new TQHBoxLayout();
+    m_chkTopPicInvert = new TQCheckBox("Invert", this);
+    m_chkTopPicInvert->setChecked(topPicInvert);
+    hBoxTopPicOptions->addWidget(m_chkTopPicInvert);
+    hBoxTopPicOptions->addSpacing(12);
+
+    m_chkTopPicColorize = new TQCheckBox("Colorize", this);
     m_chkTopPicColorize->setChecked(topPicColorize);
-    hBoxTopColorize->addWidget(m_chkTopPicColorize);
-    hBoxTopColorize->addSpacing(8);
+    hBoxTopPicOptions->addWidget(m_chkTopPicColorize);
+    hBoxTopPicOptions->addSpacing(6);
 
     m_topPicColor = TQColor(config.readEntry("TopPicColor", TDEGlobalSettings::highlightColor().name()));
     if (!m_topPicColor.isValid()) m_topPicColor = TDEGlobalSettings::highlightColor();
@@ -788,10 +851,10 @@ ClassicXSettingsDialog::ClassicXSettingsDialog(TQWidget* parent)
     m_btnTopPicColor->setFixedSize(30, 22);
     updateColorButton(m_btnTopPicColor, m_topPicColor);
     m_btnTopPicColor->setEnabled(topPicColorize && (topPicMode == 1 || topPicMode == 2));
-    hBoxTopColorize->addWidget(m_btnTopPicColor);
-    hBoxTopColorize->addStretch(1);
+    hBoxTopPicOptions->addWidget(m_btnTopPicColor);
+    hBoxTopPicOptions->addStretch(1);
 
-    col4->addLayout(hBoxTopColorize);
+    col4->addLayout(hBoxTopPicOptions);
     col4->addSpacing(4);
 
     bool topPicShowText = config.readBoolEntry("TopPicShowText", false);
@@ -801,6 +864,7 @@ ClassicXSettingsDialog::ClassicXSettingsDialog(TQWidget* parent)
     int topPicTextColorMode = config.readNumEntry("TopPicTextColorMode", 0);
     TQString topPicTextColorStr = config.readEntry("TopPicTextColor", "");
     m_topPicTextColor = !topPicTextColorStr.isEmpty() ? TQColor(topPicTextColorStr) : TQColor();
+    bool topPicShowRam = config.readBoolEntry("TopPicShowRam", false);
     bool topPicShowDate = config.readBoolEntry("TopPicShowDate", false);
     bool topPicShowTime = config.readBoolEntry("TopPicShowTime", false);
 
@@ -833,6 +897,15 @@ ClassicXSettingsDialog::ClassicXSettingsDialog(TQWidget* parent)
     m_editTopPicText = new TQLineEdit(topPicText, this);
     hBoxTopTextSub->addWidget(m_editTopPicText, 1);
     col4->addLayout(hBoxTopTextSub);
+    col4->addSpacing(4);
+
+    m_chkTopPicUseRam = new TQCheckBox("Free RAM", this);
+    m_chkTopPicUseRam->setChecked(topPicShowRam);
+    TQHBoxLayout *hBoxSubRamIndent = new TQHBoxLayout();
+    hBoxSubRamIndent->addSpacing(16);
+    hBoxSubRamIndent->addWidget(m_chkTopPicUseRam);
+    hBoxSubRamIndent->addStretch(1);
+    col4->addLayout(hBoxSubRamIndent);
     col4->addSpacing(4);
 
     m_chkTopPicUseDate = new TQCheckBox("Date of the day", this);
@@ -880,21 +953,39 @@ ClassicXSettingsDialog::ClassicXSettingsDialog(TQWidget* parent)
     hBoxTextColor->addWidget(m_btnTopPicTextColor);
     hBoxTextColor->addStretch(1);
     col4->addLayout(hBoxTextColor);
+    col4->addSpacing(4);
+
+    int topPicTextAlign = config.readNumEntry("TopPicTextAlign", 0);
+    TQHBoxLayout *hBoxTextAlign = new TQHBoxLayout();
+    hBoxTextAlign->addSpacing(16);
+    m_lblTopPicTextAlign = new TQLabel("Alignment:", this);
+    m_cmbTopPicTextAlign = new TQComboBox(false, this);
+    m_cmbTopPicTextAlign->insertItem("Center");
+    m_cmbTopPicTextAlign->insertItem("Left");
+    m_cmbTopPicTextAlign->insertItem("Right");
+    m_cmbTopPicTextAlign->setCurrentItem(topPicTextAlign);
+    hBoxTextAlign->addWidget(m_lblTopPicTextAlign);
+    hBoxTextAlign->addWidget(m_cmbTopPicTextAlign);
+    hBoxTextAlign->addStretch(1);
+    col4->addLayout(hBoxTextAlign);
     col4->addSpacing(6);
 
     connect(m_cmbTopPicMode, TQT_SIGNAL(activated(int)), this, TQT_SLOT(onTopPicModeChanged(int)));
     connect(m_btnBrowseTopPicLeft, TQT_SIGNAL(clicked()), this, TQT_SLOT(onBrowseTopPicLeftClicked()));
     connect(m_btnBrowseTopPicCenter, TQT_SIGNAL(clicked()), this, TQT_SLOT(onBrowseTopPicCenterClicked()));
     connect(m_btnBrowseTopPicRight, TQT_SIGNAL(clicked()), this, TQT_SLOT(onBrowseTopPicRightClicked()));
+    connect(m_chkTopPicInvert, TQT_SIGNAL(toggled(bool)), this, TQT_SLOT(onTopPicInvertToggled(bool)));
     connect(m_chkTopPicColorize, TQT_SIGNAL(toggled(bool)), this, TQT_SLOT(onTopPicColorizeToggled(bool)));
     connect(m_btnTopPicColor, TQT_SIGNAL(clicked()), this, TQT_SLOT(onTopPicColorClicked()));
     connect(m_chkTopPicShowText, TQT_SIGNAL(toggled(bool)), this, TQT_SLOT(onTopPicShowTextToggled(bool)));
     connect(m_chkTopPicUseUser, TQT_SIGNAL(toggled(bool)), this, TQT_SLOT(onTopPicSubTextToggled(bool)));
     connect(m_chkTopPicUseCustom, TQT_SIGNAL(toggled(bool)), this, TQT_SLOT(onTopPicSubTextToggled(bool)));
+    connect(m_chkTopPicUseRam, TQT_SIGNAL(toggled(bool)), this, TQT_SLOT(onTopPicSubTextToggled(bool)));
     connect(m_chkTopPicUseDate, TQT_SIGNAL(toggled(bool)), this, TQT_SLOT(onTopPicSubTextToggled(bool)));
     connect(m_chkTopPicUseTime, TQT_SIGNAL(toggled(bool)), this, TQT_SLOT(onTopPicSubTextToggled(bool)));
     connect(m_cmbTopPicTextColorMode, TQT_SIGNAL(activated(int)), this, TQT_SLOT(onTopPicTextColorModeChanged(int)));
     connect(m_btnTopPicTextColor, TQT_SIGNAL(clicked()), this, TQT_SLOT(onTopPicTextColorClicked()));
+    connect(m_cmbTopPicTextAlign, TQT_SIGNAL(activated(int)), this, TQT_SLOT(onSettingsEdited()));
 
     updateTopPictureUI();
     col4->addStretch(1);
@@ -915,60 +1006,56 @@ ClassicXSettingsDialog::ClassicXSettingsDialog(TQWidget* parent)
     midCol->addLayout(hBoxPreview);
     midCol->addSpacing(6);
 
-    TQButtonGroup *bgIconType = new TQButtonGroup(this);
-    bgIconType->hide();
-    bgIconType->setExclusive(true);
+    m_cmbIconType = new TQComboBox(false, this);
+    m_cmbIconType->insertItem("Embedded");
+    m_cmbIconType->insertItem("TDE (system)");
+    m_cmbIconType->insertItem("Custom");
+    m_cmbIconType->setSizePolicy(TQSizePolicy(TQSizePolicy::Fixed, TQSizePolicy::Fixed));
 
-    m_rbIconEmbedded = new TQRadioButton("Embedded", this);
-    m_rbIconTDE = new TQRadioButton("TDE", this);
-    m_rbIconCustom = new TQRadioButton("Custom", this);
+    m_iconTypeStack = new TQWidgetStack(this);
 
-    bgIconType->insert(m_rbIconEmbedded, 0);
-    bgIconType->insert(m_rbIconTDE, 1);
-    bgIconType->insert(m_rbIconCustom, 2);
-
-    TQVBoxLayout *rbBox = new TQVBoxLayout();
-
-    TQHBoxLayout *hBoxEmb = new TQHBoxLayout();
-    hBoxEmb->addWidget(m_rbIconEmbedded);
-    m_cmbEmbeddedIcon = new TQComboBox(false, this);
+    m_cmbEmbeddedIcon = new TQComboBox(false, m_iconTypeStack);
     TQStringList startIcons = EmbeddedIcons::getStartIconNames();
     for (TQStringList::ConstIterator it = startIcons.begin(); it != startIcons.end(); ++it) {
         m_cmbEmbeddedIcon->insertItem(*it);
     }
-    hBoxEmb->addWidget(m_cmbEmbeddedIcon);
-    rbBox->addLayout(hBoxEmb);
+    m_iconTypeStack->addWidget(m_cmbEmbeddedIcon, 0);
 
-    rbBox->addWidget(m_rbIconTDE);
+    TQWidget *emptyPage = new TQWidget(m_iconTypeStack);
+    m_iconTypeStack->addWidget(emptyPage, 1);
 
-    TQHBoxLayout *hBoxCust = new TQHBoxLayout();
-    hBoxCust->addWidget(m_rbIconCustom);
-    m_btnBrowseCustomIcon = new TQPushButton("Browse...", this);
-    hBoxCust->addWidget(m_btnBrowseCustomIcon);
-    rbBox->addLayout(hBoxCust);
+    TQWidget *customPage = new TQWidget(m_iconTypeStack);
+    TQHBoxLayout *customLayout = new TQHBoxLayout(customPage);
+    customLayout->setMargin(0);
+    m_btnBrowseCustomIcon = new TQPushButton(i18n("Browse..."), customPage);
+    m_btnBrowseCustomIcon->setSizePolicy(TQSizePolicy(TQSizePolicy::Fixed, TQSizePolicy::Fixed));
+    customLayout->addWidget(m_btnBrowseCustomIcon);
+    customLayout->addStretch(1);
+    m_iconTypeStack->addWidget(customPage, 2);
 
-    midCol->addLayout(rbBox);
+    TQHBoxLayout *hBoxIconType = new TQHBoxLayout();
+    hBoxIconType->addWidget(m_cmbIconType);
+    hBoxIconType->addWidget(m_iconTypeStack);
+
+    midCol->addLayout(hBoxIconType);
 
     midCol->addSpacing(6);
-    TQHBoxLayout *hBoxScaleInvert = new TQHBoxLayout();
+    TQHBoxLayout *hBoxIconOptions = new TQHBoxLayout();
 
     m_chkFullScaleStartIcon = new TQCheckBox("Full scale", this);
     m_chkFullScaleStartIcon->setChecked(ClassicXSettings::fullScaleStartIcon());
-    hBoxScaleInvert->addWidget(m_chkFullScaleStartIcon);
-    hBoxScaleInvert->addSpacing(12);
+    hBoxIconOptions->addWidget(m_chkFullScaleStartIcon);
+    hBoxIconOptions->addSpacing(12);
 
-    m_chkInvertStartIcon = new TQCheckBox("Invert icon", this);
+    m_chkInvertStartIcon = new TQCheckBox("Invert", this);
     m_chkInvertStartIcon->setChecked(ClassicXSettings::invertStartIcon());
-    hBoxScaleInvert->addWidget(m_chkInvertStartIcon);
-    hBoxScaleInvert->addStretch(1);
+    hBoxIconOptions->addWidget(m_chkInvertStartIcon);
+    hBoxIconOptions->addSpacing(12);
 
-    midCol->addLayout(hBoxScaleInvert);
-
-    TQHBoxLayout *hBoxColorize = new TQHBoxLayout();
     m_chkColorizeStartIcon = new TQCheckBox("Colorize", this);
     m_chkColorizeStartIcon->setChecked(ClassicXSettings::colorizeStartIcon());
-    hBoxColorize->addWidget(m_chkColorizeStartIcon);
-    hBoxColorize->addSpacing(8);
+    hBoxIconOptions->addWidget(m_chkColorizeStartIcon);
+    hBoxIconOptions->addSpacing(6);
 
     m_startIconColor = ClassicXSettings::startIconColor();
     if (!m_startIconColor.isValid()) m_startIconColor = TQColor(0, 0, 0);
@@ -977,10 +1064,10 @@ ClassicXSettingsDialog::ClassicXSettingsDialog(TQWidget* parent)
     m_btnStartIconColor->setFixedSize(30, 22);
     updateColorButton(m_btnStartIconColor, m_startIconColor);
     m_btnStartIconColor->setEnabled(m_chkColorizeStartIcon->isChecked());
-    hBoxColorize->addWidget(m_btnStartIconColor);
-    hBoxColorize->addStretch(1);
+    hBoxIconOptions->addWidget(m_btnStartIconColor);
+    hBoxIconOptions->addStretch(1);
 
-    midCol->addLayout(hBoxColorize);
+    midCol->addLayout(hBoxIconOptions);
     midCol->addSpacing(8);
 
     // Group: Sidebar
@@ -1040,21 +1127,28 @@ ClassicXSettingsDialog::ClassicXSettingsDialog(TQWidget* parent)
     m_chkSidebarSettings = new TQCheckBox("Settings", this);
     m_chkSidebarDocuments = new TQCheckBox("Documents", this);
     m_chkSidebarImages = new TQCheckBox("Images", this);
+    m_chkSidebarDownloads = new TQCheckBox("Downloads", this);
 
     m_chkSidebarUserMenu->setChecked(ClassicXSettings::showSidebarUserMenu());
     m_chkSidebarShutdownMenu->setChecked(ClassicXSettings::showSidebarShutdownMenu());
     m_chkSidebarSettings->setChecked(ClassicXSettings::showSidebarSettings());
     m_chkSidebarDocuments->setChecked(ClassicXSettings::showSidebarDocuments());
     m_chkSidebarImages->setChecked(ClassicXSettings::showSidebarImages());
+    m_chkSidebarDownloads->setChecked(ClassicXSettings::showSidebarDownloads());
 
     gridButtons->addWidget(m_chkSidebarUserMenu, 0, 0);
     gridButtons->addWidget(m_chkSidebarShutdownMenu, 0, 1);
     gridButtons->addWidget(m_chkSidebarSettings, 1, 0);
     gridButtons->addWidget(m_chkSidebarDocuments, 1, 1);
     gridButtons->addWidget(m_chkSidebarImages, 2, 0);
+    gridButtons->addWidget(m_chkSidebarDownloads, 2, 1);
 
     midCol->addWidget(m_lblButtonsHeader);
     midCol->addLayout(gridButtons);
+
+    m_chkSidebarUserOnTop = new TQCheckBox("User button on top of sidebar", this);
+    m_chkSidebarUserOnTop->setChecked(ClassicXSettings::sidebarUserOnTop());
+    midCol->addWidget(m_chkSidebarUserOnTop);
 
     midCol->addSpacing(8);
 
@@ -1065,31 +1159,26 @@ ClassicXSettingsDialog::ClassicXSettingsDialog(TQWidget* parent)
     m_lblUserShutdownHeight = new TQLabel("User & Shutdown panel height:", this);
     midCol->addWidget(m_lblUserShutdownHeight);
 
-    m_rbUserShutdownFullHeight = new TQRadioButton("Full menu height", this);
-    m_rbUserShutdownCustomHeight = new TQRadioButton("Custom", this);
+    TQHBoxLayout *hBoxCustomHeight = new TQHBoxLayout();
+    m_cmbUserShutdownHeightMode = new TQComboBox(false, this);
+    m_cmbUserShutdownHeightMode->insertItem("Full menu height");
+    m_cmbUserShutdownHeightMode->insertItem("Custom");
+    m_cmbUserShutdownHeightMode->setSizePolicy(TQSizePolicy::Fixed, TQSizePolicy::Fixed);
+    m_cmbUserShutdownHeightMode->setCurrentItem(fullHeight ? 0 : 1);
+
     m_spinUserShutdownCustomHeight = new TQSpinBox(250, 2000, 10, this);
     m_spinUserShutdownCustomHeight->setSuffix(" px");
     m_spinUserShutdownCustomHeight->setValue(customH);
-
-    m_rbUserShutdownFullHeight->setChecked(fullHeight);
-    m_rbUserShutdownCustomHeight->setChecked(!fullHeight);
     m_spinUserShutdownCustomHeight->setEnabled(!fullHeight);
 
-    TQButtonGroup *bgUserShutdownHeight = new TQButtonGroup(this);
-    bgUserShutdownHeight->hide();
-    bgUserShutdownHeight->insert(m_rbUserShutdownFullHeight, 0);
-    bgUserShutdownHeight->insert(m_rbUserShutdownCustomHeight, 1);
-
-    midCol->addWidget(m_rbUserShutdownFullHeight);
-
-    TQHBoxLayout *hBoxCustomHeight = new TQHBoxLayout();
-    hBoxCustomHeight->addWidget(m_rbUserShutdownCustomHeight);
+    hBoxCustomHeight->addWidget(m_cmbUserShutdownHeightMode);
+    hBoxCustomHeight->addSpacing(8);
     hBoxCustomHeight->addWidget(m_spinUserShutdownCustomHeight);
     hBoxCustomHeight->addStretch(1);
     midCol->addLayout(hBoxCustomHeight);
     midCol->addSpacing(6);
 
-    connect(m_rbUserShutdownFullHeight, TQT_SIGNAL(toggled(bool)), this, TQT_SLOT(onUserShutdownHeightToggled(bool)));
+    connect(m_cmbUserShutdownHeightMode, TQT_SIGNAL(activated(int)), this, TQT_SLOT(onUserShutdownHeightModeChanged(int)));
 
 
 
@@ -1110,10 +1199,11 @@ ClassicXSettingsDialog::ClassicXSettingsDialog(TQWidget* parent)
     if (m_chkSidebarSettings) m_chkSidebarSettings->setEnabled(sideEnabled);
     if (m_chkSidebarDocuments) m_chkSidebarDocuments->setEnabled(sideEnabled);
     if (m_chkSidebarImages) m_chkSidebarImages->setEnabled(sideEnabled);
+    if (m_chkSidebarDownloads) m_chkSidebarDownloads->setEnabled(sideEnabled);
+    if (m_chkSidebarUserOnTop) m_chkSidebarUserOnTop->setEnabled(sideEnabled && m_chkSidebarUserMenu->isChecked());
 
     if (m_lblUserShutdownHeight) m_lblUserShutdownHeight->setEnabled(sideEnabled);
-    if (m_rbUserShutdownFullHeight) m_rbUserShutdownFullHeight->setEnabled(sideEnabled);
-    if (m_rbUserShutdownCustomHeight) m_rbUserShutdownCustomHeight->setEnabled(sideEnabled);
+    if (m_cmbUserShutdownHeightMode) m_cmbUserShutdownHeightMode->setEnabled(sideEnabled);
     if (m_spinUserShutdownCustomHeight) m_spinUserShutdownCustomHeight->setEnabled(sideEnabled && !fullHeight);
 
     updateSidebarPictureUI();
@@ -1179,18 +1269,130 @@ ClassicXSettingsDialog::ClassicXSettingsDialog(TQWidget* parent)
 
     midCol->addLayout(gridShutdown);
 
+    // Group: User picture (positioned in midCol below Shutdown actions)
+    midCol->addSpacing(6);
+    midCol->addWidget(createSectionLabel("User picture", this));
+    midCol->addSpacing(4);
+
+    TQHBoxLayout *hBoxUserPicSection = new TQHBoxLayout();
+
+    m_lblUserPicPreview = new TQLabel(this);
+    m_lblUserPicPreview->setFrameShape(TQFrame::StyledPanel);
+    m_lblUserPicPreview->setFrameShadow(TQFrame::Sunken);
+    m_lblUserPicPreview->setAlignment(TQt::AlignCenter);
+    m_lblUserPicPreview->setFixedSize(38, 38);
+    hBoxUserPicSection->addWidget(m_lblUserPicPreview, 0, TQt::AlignVCenter);
+    hBoxUserPicSection->addSpacing(8);
+
+    TQVBoxLayout *vBoxUserPicControls = new TQVBoxLayout();
+
+    m_cmbUserPicMode = new TQComboBox(false, this);
+    m_cmbUserPicMode->insertItem("TDE");
+    m_cmbUserPicMode->insertItem("Embedded");
+    m_cmbUserPicMode->insertItem("Custom");
+    m_cmbUserPicMode->setSizePolicy(TQSizePolicy(TQSizePolicy::Fixed, TQSizePolicy::Fixed));
+    int upm = ClassicXSettings::userPicMode();
+    if (upm < 0 || upm > 2) upm = 0;
+    m_cmbUserPicMode->setCurrentItem(upm);
+
+    m_userPicStack = new TQWidgetStack(this);
+
+    TQWidget *emptyUserPage = new TQWidget(m_userPicStack);
+    m_userPicStack->addWidget(emptyUserPage, 0);
+
+    m_cmbUserPicEmbedded = new TQComboBox(false, m_userPicStack);
+    TQStringList userPixList = EmbeddedIcons::getUserPixNames();
+    for (TQStringList::ConstIterator it = userPixList.begin(); it != userPixList.end(); ++it) {
+        m_cmbUserPicEmbedded->insertItem(*it);
+    }
+    TQString curEmb = ClassicXSettings::userPicEmbedded();
+    if (curEmb.isEmpty()) curEmb = "classic";
+    setComboByText(m_cmbUserPicEmbedded, curEmb);
+    m_userPicStack->addWidget(m_cmbUserPicEmbedded, 1);
+
+    TQWidget *customUserPage = new TQWidget(m_userPicStack);
+    TQHBoxLayout *customUserLayout = new TQHBoxLayout(customUserPage);
+    customUserLayout->setMargin(0);
+    m_btnBrowseUserPic = new TQPushButton(i18n("Browse..."), customUserPage);
+    m_btnBrowseUserPic->setSizePolicy(TQSizePolicy(TQSizePolicy::Fixed, TQSizePolicy::Fixed));
+    m_userPicCustomPath = ClassicXSettings::userPicCustomPath();
+    if (!m_userPicCustomPath.isEmpty()) {
+        TQToolTip::add(m_btnBrowseUserPic, m_userPicCustomPath);
+    }
+    customUserLayout->addWidget(m_btnBrowseUserPic);
+    customUserLayout->addStretch(1);
+    m_userPicStack->addWidget(customUserPage, 2);
+
+    m_userPicStack->raiseWidget(upm);
+
+    TQHBoxLayout *hBoxUserPic = new TQHBoxLayout();
+    hBoxUserPic->addWidget(m_cmbUserPicMode);
+    hBoxUserPic->addWidget(m_userPicStack);
+    vBoxUserPicControls->addLayout(hBoxUserPic);
+
+    vBoxUserPicControls->addSpacing(4);
+    TQHBoxLayout *hBoxUserPicOptions = new TQHBoxLayout();
+
+    m_chkInvertUserPic = new TQCheckBox("Invert", this);
+    m_chkInvertUserPic->setChecked(ClassicXSettings::invertUserPic());
+    hBoxUserPicOptions->addWidget(m_chkInvertUserPic);
+    hBoxUserPicOptions->addSpacing(12);
+
+    m_chkColorizeUserPic = new TQCheckBox("Colorize", this);
+    m_chkColorizeUserPic->setChecked(ClassicXSettings::colorizeUserPic());
+    hBoxUserPicOptions->addWidget(m_chkColorizeUserPic);
+    hBoxUserPicOptions->addSpacing(6);
+
+    m_userPicColor = ClassicXSettings::userPicColor();
+    if (!m_userPicColor.isValid()) m_userPicColor = TQColor(0, 0, 0);
+
+    m_btnUserPicColor = new TQPushButton("", this);
+    m_btnUserPicColor->setFixedSize(30, 22);
+    updateColorButton(m_btnUserPicColor, m_userPicColor);
+    m_btnUserPicColor->setEnabled(m_chkColorizeUserPic->isChecked());
+    hBoxUserPicOptions->addWidget(m_btnUserPicColor);
+    hBoxUserPicOptions->addStretch(1);
+
+    vBoxUserPicControls->addLayout(hBoxUserPicOptions);
+
+    hBoxUserPicSection->addLayout(vBoxUserPicControls);
+    midCol->addLayout(hBoxUserPicSection);
+
+    connect(m_cmbUserPicMode, TQT_SIGNAL(activated(int)), this, TQT_SLOT(onUserPicModeChanged(int)));
+    connect(m_cmbUserPicEmbedded, TQT_SIGNAL(activated(int)), this, TQT_SLOT(updateUserPicPreview()));
+    connect(m_cmbUserPicEmbedded, TQT_SIGNAL(activated(int)), this, TQT_SLOT(onSettingsEdited()));
+    connect(m_btnBrowseUserPic, TQT_SIGNAL(clicked()), this, TQT_SLOT(onBrowseUserPicClicked()));
+    connect(m_chkInvertUserPic, TQT_SIGNAL(toggled(bool)), this, TQT_SLOT(onInvertUserPicToggled(bool)));
+    connect(m_chkColorizeUserPic, TQT_SIGNAL(toggled(bool)), this, TQT_SLOT(onColorizeUserPicToggled(bool)));
+    connect(m_btnUserPicColor, TQT_SIGNAL(clicked()), this, TQT_SLOT(onUserPicColorClicked()));
+
+    updateUserPicPreview();
+
     midCol->addStretch(1);
 
     // Group: UI Icons (Column 3)
     rightCol->addWidget(createSectionLabel("UI icons", this));
     rightCol->addSpacing(4);
 
-    TQHBoxLayout *uiIconBox = new TQHBoxLayout();
-    uiIconBox->addWidget(new TQLabel("Icons size:", this));
+    TQHBoxLayout *hBoxPresetSize = new TQHBoxLayout();
+    hBoxPresetSize->addWidget(new TQLabel("Preset:", this));
+    m_cmbUiIconPreset = new TQComboBox(false, this);
+    // Index 0 is blank: mixed individual sources (not the "Custom" preset).
+    m_cmbUiIconPreset->insertItem(TQString::fromLatin1(""));
+    m_cmbUiIconPreset->insertItem("Win");
+    m_cmbUiIconPreset->insertItem("KDE");
+    m_cmbUiIconPreset->insertItem("Alt");
+    m_cmbUiIconPreset->insertItem("Alt2");
+    TQToolTip::add(m_cmbUiIconPreset, i18n("Apply Win, KDE, Alt or Alt2 to every UI icon at once. Clears if any icon differs."));
+    hBoxPresetSize->addWidget(m_cmbUiIconPreset);
+
+    hBoxPresetSize->addSpacing(10);
+
+    hBoxPresetSize->addWidget(new TQLabel("Size:", this));
     m_cmbUiIconSize = new TQComboBox(false, this);
-    uiIconBox->addWidget(m_cmbUiIconSize);
-    uiIconBox->addStretch(1);
-    rightCol->addLayout(uiIconBox);
+    hBoxPresetSize->addWidget(m_cmbUiIconSize);
+    hBoxPresetSize->addStretch(1);
+    rightCol->addLayout(hBoxPresetSize);
 
     updateUiIconSizeCombo(m_spinWidth->value());
     connect(m_spinWidth, TQT_SIGNAL(valueChanged(int)), this, TQT_SLOT(onSidebarWidthChanged(int)));
@@ -1218,34 +1420,23 @@ ClassicXSettingsDialog::ClassicXSettingsDialog(TQWidget* parent)
     hBoxUiColorize->addStretch(1);
 
     rightCol->addLayout(hBoxUiColorize);
-    rightCol->addSpacing(6);
+    rightCol->addSpacing(2);
 
-    TQHBoxLayout *hBoxUiPreset = new TQHBoxLayout();
-    hBoxUiPreset->addWidget(new TQLabel("Preset:", this));
-    m_cmbUiIconPreset = new TQComboBox(false, this);
-    // Index 0 is blank: mixed individual sources (not the "Custom" preset).
-    m_cmbUiIconPreset->insertItem(TQString::fromLatin1(""));
-    m_cmbUiIconPreset->insertItem("Win");
-    m_cmbUiIconPreset->insertItem("KDE");
-    TQToolTip::add(m_cmbUiIconPreset, i18n("Apply Win or KDE to every UI icon at once. Clears if any icon differs."));
-    hBoxUiPreset->addWidget(m_cmbUiIconPreset);
-    hBoxUiPreset->addStretch(1);
-    rightCol->addLayout(hBoxUiPreset);
-
-    m_uiIconControls[0].label = "Shutdown";        m_uiIconControls[0].embeddedName = "kickermenu-logout";
-    m_uiIconControls[1].label = "Standby";         m_uiIconControls[1].embeddedName = "menu-sleep";
-    m_uiIconControls[2].label = "Logout";          m_uiIconControls[2].embeddedName = "menu-logout";
-    m_uiIconControls[3].label = "Restart";         m_uiIconControls[3].embeddedName = "menu-restart";
-    m_uiIconControls[4].label = "Hibernate";       m_uiIconControls[4].embeddedName = "menu-hibernate";
-    m_uiIconControls[5].label = "Hybrid sleep";    m_uiIconControls[5].embeddedName = "menu-hybrid";
-    m_uiIconControls[6].label = "Documents folder";m_uiIconControls[6].embeddedName = "menu-docs";
-    m_uiIconControls[7].label = "Images folder";   m_uiIconControls[7].embeddedName = "menu-images";
-    m_uiIconControls[8].label = "Settings";        m_uiIconControls[8].embeddedName = "menu-settings";
+    m_uiIconControls[0].label = "Shutdown";         m_uiIconControls[0].embeddedName = "kickermenu-logout";
+    m_uiIconControls[1].label = "Standby";          m_uiIconControls[1].embeddedName = "menu-sleep";
+    m_uiIconControls[2].label = "Logout";           m_uiIconControls[2].embeddedName = "menu-logout";
+    m_uiIconControls[3].label = "Restart";          m_uiIconControls[3].embeddedName = "menu-restart";
+    m_uiIconControls[4].label = "Hibernate";        m_uiIconControls[4].embeddedName = "menu-hibernate";
+    m_uiIconControls[5].label = "Hybrid sleep";     m_uiIconControls[5].embeddedName = "menu-hybrid";
+    m_uiIconControls[6].label = "Documents folder"; m_uiIconControls[6].embeddedName = "menu-docs";
+    m_uiIconControls[7].label = "Images folder";    m_uiIconControls[7].embeddedName = "menu-images";
+    m_uiIconControls[8].label = "Downloads folder"; m_uiIconControls[8].embeddedName = "menu-downloads";
+    m_uiIconControls[9].label = "Lock session";     m_uiIconControls[9].embeddedName = "system-lock-screen";
+    m_uiIconControls[10].label = "Settings";        m_uiIconControls[10].embeddedName = "menu-settings";
 
     for (int i = 0; i < UI_ICON_COUNT; ++i) {
-        rightCol->addSpacing(8);
+        if (i > 0) rightCol->addSpacing(3);
         rightCol->addWidget(new TQLabel(m_uiIconControls[i].label, this));
-        rightCol->addSpacing(2);
 
         TQHBoxLayout *box = new TQHBoxLayout();
         box->setSpacing(6);
@@ -1259,9 +1450,11 @@ ClassicXSettingsDialog::ClassicXSettingsDialog(TQWidget* parent)
         m_uiIconControls[i].cmbSource = new TQComboBox(false, this);
         m_uiIconControls[i].cmbSource->insertItem("Win");
         m_uiIconControls[i].cmbSource->insertItem("KDE");
+        m_uiIconControls[i].cmbSource->insertItem("Alt");
+        m_uiIconControls[i].cmbSource->insertItem("Alt2");
         m_uiIconControls[i].cmbSource->insertItem("Custom");
 
-        m_uiIconControls[i].btnBrowse = new TQPushButton("Browse...", this);
+        m_uiIconControls[i].btnBrowse = new TQPushButton(i18n("Browse..."), this);
 
         box->addWidget(m_uiIconControls[i].previewLabel, 0, TQt::AlignVCenter);
         box->addSpacing(10);
@@ -1289,7 +1482,9 @@ ClassicXSettingsDialog::ClassicXSettingsDialog(TQWidget* parent)
     m_uiIconControls[5].customPath = ClassicXSettings::hybridSleepCustomIconPath();
     m_uiIconControls[6].customPath = ClassicXSettings::documentsCustomIconPath();
     m_uiIconControls[7].customPath = ClassicXSettings::imagesCustomIconPath();
-    m_uiIconControls[8].customPath = ClassicXSettings::settingsCustomIconPath();
+    m_uiIconControls[8].customPath = ClassicXSettings::downloadsCustomIconPath();
+    m_uiIconControls[9].customPath = ClassicXSettings::lockScreenCustomIconPath();
+    m_uiIconControls[10].customPath = ClassicXSettings::settingsCustomIconPath();
     for (int i = 0; i < UI_ICON_COUNT; ++i) {
         if (m_uiIconControls[i].cmbSource)
             m_uiIconControls[i].cmbSource->setCurrentItem(
@@ -1297,12 +1492,10 @@ ClassicXSettingsDialog::ClassicXSettingsDialog(TQWidget* parent)
     }
     syncUiIconPresetCombo();
 
-    if (iconType == 1) {
-        m_rbIconTDE->setChecked(true);
-    } else if (iconType == 2) {
-        m_rbIconCustom->setChecked(true);
+    if (iconType >= 0 && iconType <= 2) {
+        m_cmbIconType->setCurrentItem(iconType);
     } else {
-        m_rbIconEmbedded->setChecked(true);
+        m_cmbIconType->setCurrentItem(0);
     }
 
     int embIdx = -1;
@@ -1316,7 +1509,7 @@ ClassicXSettingsDialog::ClassicXSettingsDialog(TQWidget* parent)
         m_cmbEmbeddedIcon->setCurrentItem(embIdx);
     }
 
-    connect(bgIconType, TQT_SIGNAL(clicked(int)), this, TQT_SLOT(onIconTypeChanged()));
+    connect(m_cmbIconType, TQT_SIGNAL(activated(int)), this, TQT_SLOT(onIconTypeChanged()));
     connect(m_cmbEmbeddedIcon, TQT_SIGNAL(activated(int)), this, TQT_SLOT(onEmbeddedIconChanged(int)));
     connect(m_btnBrowseCustomIcon, TQT_SIGNAL(clicked()), this, TQT_SLOT(onBrowseCustomIconClicked()));
     connect(m_chkFullScaleStartIcon, TQT_SIGNAL(toggled(bool)), this, TQT_SLOT(onIconTypeChanged()));
@@ -1372,8 +1565,8 @@ ClassicXSettingsDialog::ClassicXSettingsDialog(TQWidget* parent)
 
     btnLayout->addStretch(1);
 
-    TQPushButton *btnOk = new TQPushButton("OK", this);
-    TQPushButton *btnCancel = new TQPushButton("Cancel", this);
+    TQPushButton *btnOk = new TQPushButton(i18n("&OK"), this);
+    TQPushButton *btnCancel = new TQPushButton(i18n("&Cancel"), this);
     btnOk->setDefault(true);
     btnOk->setFocus();
     btnLayout->addWidget(btnOk);
@@ -1385,9 +1578,9 @@ ClassicXSettingsDialog::ClassicXSettingsDialog(TQWidget* parent)
     connect(m_chkShowSidebar, TQT_SIGNAL(toggled(bool)), this, TQT_SLOT(onShowSidebarToggled(bool)));
     connect(m_chkSidebarHover, TQT_SIGNAL(toggled(bool)), this, TQT_SLOT(onSidebarHoverToggled(bool)));
     connect(m_cmbSidebarPicMode, TQT_SIGNAL(activated(int)), this, TQT_SLOT(onSidebarPicModeChanged(int)));
-    connect(m_rbPicEmbedded, TQT_SIGNAL(toggled(bool)), this, TQT_SLOT(onSidebarPicSourceToggled(bool)));
-    connect(m_rbPicCustom, TQT_SIGNAL(toggled(bool)), this, TQT_SLOT(onSidebarPicSourceToggled(bool)));
+    connect(m_cmbSidebarPicSource, TQT_SIGNAL(activated(int)), this, TQT_SLOT(onSidebarPicSourceChanged(int)));
     connect(m_btnBrowseCustomPic, TQT_SIGNAL(clicked()), this, TQT_SLOT(onBrowseCustomPicClicked()));
+    connect(m_chkSidebarPicInvert, TQT_SIGNAL(toggled(bool)), this, TQT_SLOT(onSidebarPicInvertToggled(bool)));
     connect(m_chkSidebarPicColorize, TQT_SIGNAL(toggled(bool)), this, TQT_SLOT(onSidebarPicColorizeToggled(bool)));
     connect(m_btnSidebarPicColor, TQT_SIGNAL(clicked()), this, TQT_SLOT(onSidebarPicColorClicked()));
     connect(m_chkShowAppIcons, TQT_SIGNAL(toggled(bool)), this, TQT_SLOT(onShowAppIconsToggled(bool)));
@@ -1428,6 +1621,11 @@ ClassicXSettingsDialog::ClassicXSettingsDialog(TQWidget* parent)
     connect(m_chkSidebarSettings, TQT_SIGNAL(toggled(bool)), this, TQT_SLOT(updateSidebarWidthConstraints()));
     connect(m_chkSidebarDocuments, TQT_SIGNAL(toggled(bool)), this, TQT_SLOT(updateSidebarWidthConstraints()));
     connect(m_chkSidebarImages, TQT_SIGNAL(toggled(bool)), this, TQT_SLOT(updateSidebarWidthConstraints()));
+    connect(m_chkShowSidebar, TQT_SIGNAL(toggled(bool)), this, TQT_SLOT(updateSidebarWidthConstraints()));
+    connect(m_chkShowSidebar, TQT_SIGNAL(toggled(bool)), this, TQT_SLOT(updateMenuWidthUI()));
+    connect(m_spinWidth, TQT_SIGNAL(valueChanged(int)), this, TQT_SLOT(updateMenuWidthUI()));
+    connect(m_cmbMenuWidthMode, TQT_SIGNAL(activated(int)), this, TQT_SLOT(onMenuWidthModeChanged(int)));
+    connect(m_chkSidebarDownloads, TQT_SIGNAL(toggled(bool)), this, TQT_SLOT(updateSidebarWidthConstraints()));
     connect(m_cmbUiIconSize, TQT_SIGNAL(activated(int)), this, TQT_SLOT(updateSidebarWidthConstraints()));
 
     // Refresh color button previews and font UI
@@ -1437,6 +1635,7 @@ ClassicXSettingsDialog::ClassicXSettingsDialog(TQWidget* parent)
 
     connectProfileDirtyTracking();
     updateSidebarWidthConstraints();
+    updateMenuWidthUI();
     refreshProfileList();
     selectMatchingProfile();
     updateProfileButtons();
@@ -1453,6 +1652,9 @@ void ClassicXSettingsDialog::updateSpecialItemsEnableState()
     bool userInSidebar = sidebarActive && m_chkSidebarUserMenu->isChecked();
     bool shutdownInSidebar = sidebarActive && m_chkSidebarShutdownMenu->isChecked();
 
+    if (m_chkSidebarUserOnTop) {
+        m_chkSidebarUserOnTop->setEnabled(userInSidebar);
+    }
     if (m_chkShowSpecialUserMenu) {
         m_chkShowSpecialUserMenu->setEnabled(!userInSidebar);
     }
@@ -1627,6 +1829,9 @@ void ClassicXSettingsDialog::updateTopPictureUI()
     if (m_btnBrowseTopPicRight) m_btnBrowseTopPicRight->setEnabled(isCustom);
 
     bool topActive = (mode == 1 || mode == 2);
+    if (m_chkTopPicInvert) {
+        m_chkTopPicInvert->setEnabled(topActive);
+    }
     if (m_chkTopPicColorize) {
         m_chkTopPicColorize->setEnabled(topActive);
     }
@@ -1638,6 +1843,7 @@ void ClassicXSettingsDialog::updateTopPictureUI()
     if (m_chkTopPicShowText) m_chkTopPicShowText->setEnabled(topActive);
     if (m_chkTopPicUseUser) m_chkTopPicUseUser->setEnabled(showText);
     if (m_chkTopPicUseCustom) m_chkTopPicUseCustom->setEnabled(showText);
+    if (m_chkTopPicUseRam) m_chkTopPicUseRam->setEnabled(showText);
     if (m_chkTopPicUseDate) m_chkTopPicUseDate->setEnabled(showText);
     if (m_chkTopPicUseTime) m_chkTopPicUseTime->setEnabled(showText);
 
@@ -1648,11 +1854,124 @@ void ClassicXSettingsDialog::updateTopPictureUI()
     if (m_lblTopPicTextColor) m_lblTopPicTextColor->setEnabled(showText);
     if (m_cmbTopPicTextColorMode) m_cmbTopPicTextColorMode->setEnabled(showText);
     if (m_btnTopPicTextColor) m_btnTopPicTextColor->setEnabled(showText && colorMode == 2);
+    if (m_lblTopPicTextAlign) m_lblTopPicTextAlign->setEnabled(showText);
+    if (m_cmbTopPicTextAlign) m_cmbTopPicTextAlign->setEnabled(showText);
 }
 
 void ClassicXSettingsDialog::onTopPicModeChanged(int)
 {
     updateTopPictureUI();
+}
+
+void ClassicXSettingsDialog::onUserPicModeChanged(int mode)
+{
+    if (m_userPicStack) {
+        m_userPicStack->raiseWidget(mode);
+    }
+    updateUserPicPreview();
+    onSettingsEdited();
+}
+
+void ClassicXSettingsDialog::onBrowseUserPicClicked()
+{
+    TQString fn = KFileDialog::getOpenFileName(m_userPicCustomPath, "image/png image/jpeg image/x-xpixmap", this, i18n("Select User Picture"));
+    if (!fn.isEmpty()) {
+        m_userPicCustomPath = fn;
+        TQToolTip::add(m_btnBrowseUserPic, m_userPicCustomPath);
+        updateUserPicPreview();
+        onSettingsEdited();
+    }
+}
+
+void ClassicXSettingsDialog::onInvertUserPicToggled(bool)
+{
+    updateUserPicPreview();
+    onSettingsEdited();
+}
+
+void ClassicXSettingsDialog::onColorizeUserPicToggled(bool enabled)
+{
+    if (m_btnUserPicColor) {
+        m_btnUserPicColor->setEnabled(enabled);
+    }
+    updateUserPicPreview();
+    onSettingsEdited();
+}
+
+void ClassicXSettingsDialog::onUserPicColorClicked()
+{
+    if (!m_chkColorizeUserPic || !m_chkColorizeUserPic->isChecked()) return;
+
+    TQColor col = TQColorDialog::getColor(m_userPicColor, this);
+    if (col.isValid()) {
+        m_userPicColor = col;
+        updateColorButton(m_btnUserPicColor, m_userPicColor);
+        updateUserPicPreview();
+        onSettingsEdited();
+    }
+}
+
+void ClassicXSettingsDialog::updateUserPicPreview()
+{
+    if (!m_lblUserPicPreview) return;
+
+    int mode = m_cmbUserPicMode ? m_cmbUserPicMode->currentItem() : 0;
+    int size = 34;
+
+    TQPixmap px;
+    if (mode == 0) {
+        px = TDEGlobal::iconLoader()->loadIcon("switchuser", TDEIcon::Small, size);
+    } else if (mode == 1) {
+        TQString emb = m_cmbUserPicEmbedded ? m_cmbUserPicEmbedded->currentText() : "classic";
+        if (emb.isEmpty()) emb = "classic";
+        TQImage img = EmbeddedIcons::getNativeImage(emb);
+        if (!img.isNull()) {
+            if (img.width() != size || img.height() != size) {
+                img = img.smoothScale(size, size, TQImage::ScaleMin);
+            }
+            px.convertFromImage(img);
+        }
+    } else if (mode == 2) {
+        if (!m_userPicCustomPath.isEmpty() && TQFile::exists(m_userPicCustomPath)) {
+            TQPixmap customPx(m_userPicCustomPath);
+            if (!customPx.isNull()) {
+                TQImage img = customPx.convertToImage();
+                if (img.width() != size || img.height() != size) {
+                    img = img.smoothScale(size, size, TQImage::ScaleMin);
+                }
+                px.convertFromImage(img);
+            }
+        }
+    }
+
+    bool invert = m_chkInvertUserPic && m_chkInvertUserPic->isChecked();
+    bool colorize = m_chkColorizeUserPic && m_chkColorizeUserPic->isChecked();
+
+    if (!px.isNull() && (invert || (colorize && m_userPicColor.isValid()))) {
+        TQImage img = px.convertToImage();
+        if (invert) {
+            EmbeddedIcons::invertImage(img);
+        }
+        if (colorize && m_userPicColor.isValid()) {
+            EmbeddedIcons::colorizeImage(img, m_userPicColor, invert);
+        }
+        px.convertFromImage(img);
+    }
+
+    if (px.isNull()) {
+        m_lblUserPicPreview->setFixedSize(38, 38);
+        m_lblUserPicPreview->setPixmap(TQPixmap());
+        m_lblUserPicPreview->setText("No Icon");
+    } else {
+        m_lblUserPicPreview->setFixedSize(38, 38);
+        m_lblUserPicPreview->setPixmap(px);
+        m_lblUserPicPreview->setText(TQString::null);
+    }
+}
+
+void ClassicXSettingsDialog::onTopPicInvertToggled(bool)
+{
+    onSettingsEdited();
 }
 
 void ClassicXSettingsDialog::onTopPicColorizeToggled(bool enabled)
@@ -1770,7 +2089,10 @@ void ClassicXSettingsDialog::updateSidebarPictureUI()
 {
     bool sideEnabled = m_chkShowSidebar->isChecked();
     int mode = m_cmbSidebarPicMode->currentItem(); // 0 = None, 1 = Pattern, 2 = Picture
-    bool isCustom = m_rbPicCustom->isChecked();
+    bool isCustom = (m_cmbSidebarPicSource && m_cmbSidebarPicSource->currentItem() == 1);
+    if (m_sidebarPicSourceStack) {
+        m_sidebarPicSourceStack->raiseWidget(isCustom ? 1 : 0);
+    }
 
     if (m_lblPicMode) m_lblPicMode->setEnabled(sideEnabled);
     if (m_cmbSidebarPicMode) m_cmbSidebarPicMode->setEnabled(sideEnabled);
@@ -1791,6 +2113,8 @@ void ClassicXSettingsDialog::updateSidebarPictureUI()
     }
 
     bool picActive = sideEnabled && mode != 0;
+    if (m_chkSidebarPicInvert)
+        m_chkSidebarPicInvert->setEnabled(picActive);
     if (m_chkSidebarPicColorize)
         m_chkSidebarPicColorize->setEnabled(picActive);
     if (m_btnSidebarPicColor)
@@ -1798,9 +2122,8 @@ void ClassicXSettingsDialog::updateSidebarPictureUI()
                                          m_chkSidebarPicColorize->isChecked());
 
     if (!sideEnabled || mode == 0) { // None
-        if (m_rbPicEmbedded) m_rbPicEmbedded->setEnabled(false);
+        if (m_cmbSidebarPicSource) m_cmbSidebarPicSource->setEnabled(false);
         if (m_cmbPicEmbedded) m_cmbPicEmbedded->setEnabled(false);
-        if (m_rbPicCustom) m_rbPicCustom->setEnabled(false);
         if (m_btnBrowseCustomPic) m_btnBrowseCustomPic->setEnabled(false);
         if (m_rbPicStretch) m_rbPicStretch->setEnabled(false);
         if (m_rbPicCrop) m_rbPicCrop->setEnabled(false);
@@ -1808,9 +2131,8 @@ void ClassicXSettingsDialog::updateSidebarPictureUI()
         if (m_rbPicAlignBottom) m_rbPicAlignBottom->setEnabled(false);
         if (m_chkSidebarPicExtendEdges) m_chkSidebarPicExtendEdges->setEnabled(false);
     } else if (mode == 1) { // Pattern
-        if (m_rbPicEmbedded) m_rbPicEmbedded->setEnabled(true);
+        if (m_cmbSidebarPicSource) m_cmbSidebarPicSource->setEnabled(true);
         if (m_cmbPicEmbedded) m_cmbPicEmbedded->setEnabled(!isCustom);
-        if (m_rbPicCustom) m_rbPicCustom->setEnabled(true);
         if (m_btnBrowseCustomPic) m_btnBrowseCustomPic->setEnabled(isCustom);
         if (m_rbPicStretch) m_rbPicStretch->setEnabled(true);
         if (m_rbPicCrop) m_rbPicCrop->setEnabled(true);
@@ -1819,9 +2141,8 @@ void ClassicXSettingsDialog::updateSidebarPictureUI()
         if (m_rbPicAlignBottom) m_rbPicAlignBottom->setEnabled(false);
         if (m_chkSidebarPicExtendEdges) m_chkSidebarPicExtendEdges->setEnabled(false);
     } else { // Picture
-        if (m_rbPicEmbedded) m_rbPicEmbedded->setEnabled(true);
+        if (m_cmbSidebarPicSource) m_cmbSidebarPicSource->setEnabled(true);
         if (m_cmbPicEmbedded) m_cmbPicEmbedded->setEnabled(!isCustom);
-        if (m_rbPicCustom) m_rbPicCustom->setEnabled(true);
         if (m_btnBrowseCustomPic) m_btnBrowseCustomPic->setEnabled(isCustom);
         if (m_rbPicStretch) m_rbPicStretch->setEnabled(true);
         if (m_rbPicCrop) m_rbPicCrop->setEnabled(true);
@@ -1837,9 +2158,14 @@ void ClassicXSettingsDialog::onSidebarPicModeChanged(int)
     updateSidebarPictureUI();
 }
 
-void ClassicXSettingsDialog::onSidebarPicSourceToggled(bool)
+void ClassicXSettingsDialog::onSidebarPicSourceChanged(int)
 {
     updateSidebarPictureUI();
+}
+
+void ClassicXSettingsDialog::onSidebarPicInvertToggled(bool)
+{
+    onSettingsEdited();
 }
 
 void ClassicXSettingsDialog::onSidebarPicColorizeToggled(bool enabled)
@@ -1888,12 +2214,12 @@ void ClassicXSettingsDialog::onShowSidebarToggled(bool enabled)
     if (m_chkSidebarSettings) m_chkSidebarSettings->setEnabled(enabled);
     if (m_chkSidebarDocuments) m_chkSidebarDocuments->setEnabled(enabled);
     if (m_chkSidebarImages) m_chkSidebarImages->setEnabled(enabled);
+    if (m_chkSidebarDownloads) m_chkSidebarDownloads->setEnabled(enabled);
 
     if (m_lblUserShutdownHeight) m_lblUserShutdownHeight->setEnabled(enabled);
-    if (m_rbUserShutdownFullHeight) m_rbUserShutdownFullHeight->setEnabled(enabled);
-    if (m_rbUserShutdownCustomHeight) m_rbUserShutdownCustomHeight->setEnabled(enabled);
+    if (m_cmbUserShutdownHeightMode) m_cmbUserShutdownHeightMode->setEnabled(enabled);
     if (m_spinUserShutdownCustomHeight) {
-        bool customActive = m_rbUserShutdownCustomHeight && m_rbUserShutdownCustomHeight->isChecked();
+        bool customActive = m_cmbUserShutdownHeightMode && (m_cmbUserShutdownHeightMode->currentItem() == 1);
         m_spinUserShutdownCustomHeight->setEnabled(enabled && customActive);
     }
 
@@ -2004,6 +2330,11 @@ void ClassicXSettingsDialog::onOkClicked()
     // Also update ClassicXSettings skeleton for local applet
     ClassicXSettings::setMenuEntryFormat(selectedFmt);
     ClassicXSettings::setShowAppIcons(m_chkShowAppIcons->isChecked());
+    ClassicXSettings::setMenuCentered(m_chkMenuCentered->isChecked());
+    int finalMinWidth = (m_cmbMenuWidthMode && m_cmbMenuWidthMode->currentItem() == 1)
+                            ? m_spinMenuMinWidth->value()
+                            : 0;
+    ClassicXSettings::setMenuMinWidth(finalMinWidth);
     if (m_cmbTreeIconSize) {
         ClassicXSettings::setMenuEntryHeight(
             treeIconComboIndexToHeight(m_cmbTreeIconSize->currentItem()));
@@ -2026,7 +2357,8 @@ void ClassicXSettingsDialog::onOkClicked()
     ClassicXSettings::setSidebarHoverDelay(m_spinSidebarHoverDelay->value());
     ClassicXSettings::setSidebarButtonsAlign(m_cmbSidebarButtonsAlign->currentItem());
 
-    ClassicXSettings::setFullUserShutdownMenuHeight(m_rbUserShutdownFullHeight->isChecked());
+    bool fullHeightMode = (m_cmbUserShutdownHeightMode && m_cmbUserShutdownHeightMode->currentItem() == 0);
+    ClassicXSettings::setFullUserShutdownMenuHeight(fullHeightMode);
     ClassicXSettings::setCustomUserShutdownMenuHeight(m_spinUserShutdownCustomHeight->value());
 
     ClassicXSettings::setShowSpecialUserMenu(m_chkShowSpecialUserMenu->isChecked());
@@ -2037,17 +2369,23 @@ void ClassicXSettingsDialog::onOkClicked()
     ClassicXSettings::setShowSidebarSettings(m_chkSidebarSettings->isChecked());
     ClassicXSettings::setShowSidebarDocuments(m_chkSidebarDocuments->isChecked());
     ClassicXSettings::setShowSidebarImages(m_chkSidebarImages->isChecked());
+    ClassicXSettings::setShowSidebarDownloads(m_chkSidebarDownloads->isChecked());
+    ClassicXSettings::setSidebarUserOnTop(m_chkSidebarUserOnTop->isChecked());
 
     ClassicXSettings::setShowShutdownPowerOff(m_chkShutdownPowerOff->isChecked());
     ClassicXSettings::setShowShutdownReboot(m_chkShutdownReboot->isChecked());
     ClassicXSettings::setShowShutdownSuspend(m_chkShutdownSuspend->isChecked());
     ClassicXSettings::setShowShutdownHybridSuspend(m_chkShutdownHybridSuspend->isChecked());
     ClassicXSettings::setShowShutdownHibernate(m_chkShutdownHibernate->isChecked());
+    int userPicMode = m_cmbUserPicMode ? m_cmbUserPicMode->currentItem() : 0;
+    ClassicXSettings::setUserPicMode(userPicMode);
+    ClassicXSettings::setUserPicEmbedded(m_cmbUserPicEmbedded ? m_cmbUserPicEmbedded->currentText() : TQString::fromLatin1("classic"));
+    ClassicXSettings::setUserPicCustomPath(m_userPicCustomPath);
+    ClassicXSettings::setInvertUserPic(m_chkInvertUserPic->isChecked());
+    ClassicXSettings::setColorizeUserPic(m_chkColorizeUserPic->isChecked());
+    ClassicXSettings::setUserPicColor(m_userPicColor);
 
-    int iconType = 0;
-    if (m_rbIconTDE->isChecked()) iconType = 1;
-    else if (m_rbIconCustom->isChecked()) iconType = 2;
-
+    int iconType = m_cmbIconType ? m_cmbIconType->currentItem() : 0;
     ClassicXSettings::setIconType(iconType);
     ClassicXSettings::setEmbeddedIcon(m_cmbEmbeddedIcon->currentText());
     ClassicXSettings::setCustomIconPath(m_customIconPath);
@@ -2078,15 +2416,20 @@ void ClassicXSettingsDialog::onOkClicked()
     TDEConfig config("classicxapplet_rc");
     config.setGroup("Sidebar");
     config.writeEntry("SidebarPictureMode", m_cmbSidebarPicMode->currentItem());
-    config.writeEntry("SidebarPictureSource", m_rbPicCustom->isChecked() ? 1 : 0);
+    config.writeEntry("SidebarPictureSource", (m_cmbSidebarPicSource && m_cmbSidebarPicSource->currentItem() == 1) ? 1 : 0);
     config.writeEntry("SidebarPictureEmbedded", m_cmbPicEmbedded->currentText());
     config.writeEntry("SidebarPictureCustomPath", m_customPicPath);
     config.writeEntry("SidebarPictureWidthMode", m_rbPicCrop->isChecked() ? 1 : 0);
     config.writeEntry("SidebarPictureAlignMode", m_rbPicAlignBottom->isChecked() ? 1 : 0);
     config.writeEntry("SidebarPictureExtendEdges", m_chkSidebarPicExtendEdges->isChecked());
+    config.writeEntry("SidebarPictureInvert", m_chkSidebarPicInvert->isChecked());
     config.writeEntry("SidebarPictureColorize", m_chkSidebarPicColorize->isChecked());
     config.writeEntry("SidebarPictureColor", m_sidebarPicColor.name());
+    config.writeEntry("SidebarUserOnTop", m_chkSidebarUserOnTop->isChecked());
     ClassicXSettings::setSidebarPictureExtendEdges(m_chkSidebarPicExtendEdges->isChecked());
+    ClassicXSettings::setSidebarPictureInvert(m_chkSidebarPicInvert->isChecked());
+    ClassicXSettings::setSidebarPictureColorize(m_chkSidebarPicColorize->isChecked());
+    ClassicXSettings::setSidebarPictureColor(m_sidebarPicColor);
 
     config.setGroup("Colors");
     config.writeEntry("ColorMode", m_cmbColorMode->currentItem());
@@ -2105,6 +2448,7 @@ void ClassicXSettingsDialog::onOkClicked()
     config.writeEntry("TopPicCustomLeft", m_topPicLeftPath);
     config.writeEntry("TopPicCustomCenter", m_topPicCenterPath);
     config.writeEntry("TopPicCustomRight", m_topPicRightPath);
+    config.writeEntry("TopPicInvert", m_chkTopPicInvert->isChecked());
     config.writeEntry("TopPicColorize", m_chkTopPicColorize->isChecked());
     config.writeEntry("TopPicColor", m_topPicColor.name());
     config.writeEntry("TopPicShowText", m_chkTopPicShowText->isChecked());
@@ -2113,14 +2457,23 @@ void ClassicXSettingsDialog::onOkClicked()
     config.writeEntry("TopPicText", m_editTopPicText->text());
     config.writeEntry("TopPicTextColorMode", m_cmbTopPicTextColorMode->currentItem());
     config.writeEntry("TopPicTextColor", m_topPicTextColor.isValid() ? m_topPicTextColor.name() : "");
+    config.writeEntry("TopPicTextAlign", m_cmbTopPicTextAlign->currentItem());
+    config.writeEntry("TopPicShowRam", m_chkTopPicUseRam->isChecked());
     config.writeEntry("TopPicShowDate", m_chkTopPicUseDate->isChecked());
     config.writeEntry("TopPicShowTime", m_chkTopPicUseTime->isChecked());
+    config.writeEntry("UserPicMode", userPicMode);
+    config.writeEntry("UserPicEmbedded", m_cmbUserPicEmbedded ? m_cmbUserPicEmbedded->currentText() : "classic");
+    config.writeEntry("UserPicCustomPath", m_userPicCustomPath);
+    config.writeEntry("InvertUserPic", m_chkInvertUserPic->isChecked());
+    config.writeEntry("ColorizeUserPic", m_chkColorizeUserPic->isChecked());
+    config.writeEntry("UserPicColor", m_userPicColor.name());
 
     ClassicXSettings::setTopPicMode(m_cmbTopPicMode->currentItem());
     ClassicXSettings::setTopPicEmbedded(m_cmbTopPicEmbedded->currentText());
     ClassicXSettings::setTopPicCustomLeft(m_topPicLeftPath);
     ClassicXSettings::setTopPicCustomCenter(m_topPicCenterPath);
     ClassicXSettings::setTopPicCustomRight(m_topPicRightPath);
+    ClassicXSettings::setTopPicInvert(m_chkTopPicInvert->isChecked());
     ClassicXSettings::setTopPicColorize(m_chkTopPicColorize->isChecked());
     ClassicXSettings::setTopPicColor(m_topPicColor);
     ClassicXSettings::setTopPicShowText(m_chkTopPicShowText->isChecked());
@@ -2129,6 +2482,8 @@ void ClassicXSettingsDialog::onOkClicked()
     ClassicXSettings::setTopPicText(m_editTopPicText->text());
     ClassicXSettings::setTopPicTextColorMode(m_cmbTopPicTextColorMode->currentItem());
     ClassicXSettings::setTopPicTextColor(m_topPicTextColor);
+    ClassicXSettings::setTopPicTextAlign(m_cmbTopPicTextAlign->currentItem());
+    ClassicXSettings::setTopPicShowRam(m_chkTopPicUseRam->isChecked());
     ClassicXSettings::setTopPicShowDate(m_chkTopPicUseDate->isChecked());
     ClassicXSettings::setTopPicShowTime(m_chkTopPicUseTime->isChecked());
 
@@ -2151,7 +2506,7 @@ void ClassicXSettingsDialog::onOkClicked()
     config.writeEntry("UiIconColor", m_uiIconColor.name());
 
     struct IconConfigKey { const char* typeKey; const char* pathKey; };
-    IconConfigKey keys[9] = {
+    IconConfigKey keys[11] = {
         {"ShutdownIconType", "ShutdownCustomIconPath"},
         {"StandbyIconType", "StandbyCustomIconPath"},
         {"LogoutIconType", "LogoutCustomIconPath"},
@@ -2160,6 +2515,8 @@ void ClassicXSettingsDialog::onOkClicked()
         {"HybridSleepIconType", "HybridSleepCustomIconPath"},
         {"DocumentsIconType", "DocumentsCustomIconPath"},
         {"ImagesIconType", "ImagesCustomIconPath"},
+        {"DownloadsIconType", "DownloadsCustomIconPath"},
+        {"LockScreenIconType", "LockScreenCustomIconPath"},
         {"SettingsIconType", "SettingsCustomIconPath"}
     };
 
@@ -2187,8 +2544,14 @@ void ClassicXSettingsDialog::onOkClicked()
     ClassicXSettings::setImagesIconType(uiIconStoredType(m_uiIconControls[7].cmbSource->currentItem()));
     ClassicXSettings::setImagesCustomIconPath(m_uiIconControls[7].customPath);
 
-    ClassicXSettings::setSettingsIconType(uiIconStoredType(m_uiIconControls[8].cmbSource->currentItem()));
-    ClassicXSettings::setSettingsCustomIconPath(m_uiIconControls[8].customPath);
+    ClassicXSettings::setDownloadsIconType(uiIconStoredType(m_uiIconControls[8].cmbSource->currentItem()));
+    ClassicXSettings::setDownloadsCustomIconPath(m_uiIconControls[8].customPath);
+
+    ClassicXSettings::setLockScreenIconType(uiIconStoredType(m_uiIconControls[9].cmbSource->currentItem()));
+    ClassicXSettings::setLockScreenCustomIconPath(m_uiIconControls[9].customPath);
+
+    ClassicXSettings::setSettingsIconType(uiIconStoredType(m_uiIconControls[10].cmbSource->currentItem()));
+    ClassicXSettings::setSettingsCustomIconPath(m_uiIconControls[10].customPath);
 
     for (int i = 0; i < UI_ICON_COUNT; ++i) {
         int t = uiIconStoredType(m_uiIconControls[i].cmbSource->currentItem());
@@ -2231,11 +2594,12 @@ void ClassicXSettingsDialog::onOkClicked()
     accept();
 }
 
-void ClassicXSettingsDialog::onUserShutdownHeightToggled(bool enabled)
+void ClassicXSettingsDialog::onUserShutdownHeightModeChanged(int)
 {
     bool sideEnabled = m_chkShowSidebar && m_chkShowSidebar->isChecked();
+    bool isCustom = (m_cmbUserShutdownHeightMode && m_cmbUserShutdownHeightMode->currentItem() == 1);
     if (m_spinUserShutdownCustomHeight) {
-        m_spinUserShutdownCustomHeight->setEnabled(sideEnabled && !enabled);
+        m_spinUserShutdownCustomHeight->setEnabled(sideEnabled && isCustom);
     }
 }
 
@@ -2337,8 +2701,8 @@ void ClassicXSettingsDialog::syncUiIconPresetCombo()
     }
 
     m_cmbUiIconPreset->blockSignals(true);
-    // Preset only covers Win (0) and KDE (1). All-Custom or mixed → blank.
-    if (mixed || first < 0 || first > 1)
+    // Preset covers Win (0), KDE (1), Alt (2), Alt2 (3). All-Custom (4) or mixed → blank.
+    if (mixed || first < 0 || first > 3)
         m_cmbUiIconPreset->setCurrentItem(0);
     else
         m_cmbUiIconPreset->setCurrentItem(first + 1);
@@ -2393,13 +2757,23 @@ void ClassicXSettingsDialog::updateUiIconPreviews()
         const int combo = m_uiIconControls[i].cmbSource
                               ? m_uiIconControls[i].cmbSource->currentItem()
                               : 0;
-        const bool isCustom = (combo == 2);
+        const bool isCustom = (combo == 4);
         if (m_uiIconControls[i].btnBrowse)
             m_uiIconControls[i].btnBrowse->setEnabled(isCustom);
 
-        if (combo == 1) {
+        if (combo == 1) { // KDE
             px = uiIconPreviewPixmap(
                 TQString::fromLatin1("kde_") + m_uiIconControls[i].embeddedName, 24);
+            if (px.isNull())
+                px = uiIconPreviewPixmap(m_uiIconControls[i].embeddedName, 24);
+        } else if (combo == 2) { // Alt
+            px = uiIconPreviewPixmap(
+                TQString::fromLatin1("alt_") + m_uiIconControls[i].embeddedName, 24);
+            if (px.isNull())
+                px = uiIconPreviewPixmap(m_uiIconControls[i].embeddedName, 24);
+        } else if (combo == 3) { // Alt2
+            px = uiIconPreviewPixmap(
+                TQString::fromLatin1("alt2_") + m_uiIconControls[i].embeddedName, 24);
             if (px.isNull())
                 px = uiIconPreviewPixmap(m_uiIconControls[i].embeddedName, 24);
         } else if (isCustom) {
@@ -2415,7 +2789,7 @@ void ClassicXSettingsDialog::updateUiIconPreviews()
             }
             if (px.isNull())
                 px = uiIconPreviewPixmap(m_uiIconControls[i].embeddedName, 24);
-        } else {
+        } else { // Win (combo == 0)
             px = uiIconPreviewPixmap(m_uiIconControls[i].embeddedName, 24);
         }
 
@@ -2443,11 +2817,15 @@ void ClassicXSettingsDialog::updateUiIconPreviews()
 void ClassicXSettingsDialog::updateIconPreview()
 {
     TQPixmap px;
-    int targetH = 32;
+    bool fullScale = m_chkFullScaleStartIcon && m_chkFullScaleStartIcon->isChecked();
+    int targetH = fullScale ? 36 : 32;
 
-    if (m_rbIconEmbedded->isChecked()) {
-        m_cmbEmbeddedIcon->setEnabled(true);
-        m_btnBrowseCustomIcon->setEnabled(false);
+    int iconType = m_cmbIconType ? m_cmbIconType->currentItem() : 0;
+    if (m_iconTypeStack) {
+        m_iconTypeStack->raiseWidget(iconType);
+    }
+
+    if (iconType == 0) {
         TQString name = m_cmbEmbeddedIcon->currentText();
         TQImage img = EmbeddedIcons::getNativeImage(name);
         if (!img.isNull() && img.height() > 0) {
@@ -2455,9 +2833,7 @@ void ClassicXSettingsDialog::updateIconPreview()
             px.convertFromImage(img.smoothScale(newW, targetH));
         }
     }
-    else if (m_rbIconTDE->isChecked()) {
-        m_cmbEmbeddedIcon->setEnabled(false);
-        m_btnBrowseCustomIcon->setEnabled(false);
+    else if (iconType == 1) {
         TDEConfig kickerrc("kickerrc");
         kickerrc.setGroup("KMenu");
         TQString custIcon = kickerrc.readEntry("CustomIcon", "");
@@ -2475,9 +2851,7 @@ void ClassicXSettingsDialog::updateIconPreview()
             px.convertFromImage(img.smoothScale(newW, targetH));
         }
     }
-    else if (m_rbIconCustom->isChecked()) {
-        m_cmbEmbeddedIcon->setEnabled(false);
-        m_btnBrowseCustomIcon->setEnabled(true);
+    else if (iconType == 2) {
         TQImage img;
         if (!m_customIconPath.isEmpty()) {
             if (TQFile::exists(m_customIconPath)) {
@@ -2513,7 +2887,7 @@ void ClassicXSettingsDialog::updateIconPreview()
         m_lblStartIconPreview->setPixmap(TQPixmap());
         m_lblStartIconPreview->setText("No Icon");
     } else {
-        int frameW = px.width() + 8;
+        int frameW = px.width() + (fullScale ? 4 : 8);
         if (frameW < 38) frameW = 38;
         m_lblStartIconPreview->setFixedSize(frameW, 38);
         m_lblStartIconPreview->setPixmap(px);
@@ -2526,13 +2900,39 @@ void ClassicXSettingsDialog::onSidebarWidthChanged(int width)
     updateUiIconSizeCombo(width);
 }
 
+int ClassicXSettingsDialog::getAutoMenuWidth() const
+{
+    const bool side = m_chkShowSidebar && m_chkShowSidebar->isChecked();
+    const int sideW = side ? (m_spinWidth ? m_spinWidth->value() : 36) : 0;
+    const int extraPadding = side ? 80 : 0;
+    return sideW + 160 + extraPadding;
+}
+
+void ClassicXSettingsDialog::updateMenuWidthUI()
+{
+    if (!m_cmbMenuWidthMode || !m_spinMenuMinWidth)
+        return;
+
+    const bool isCustom = (m_cmbMenuWidthMode->currentItem() == 1);
+    m_spinMenuMinWidth->setEnabled(isCustom);
+    if (!isCustom) {
+        m_spinMenuMinWidth->setValue(getAutoMenuWidth());
+    }
+}
+
+void ClassicXSettingsDialog::onMenuWidthModeChanged(int)
+{
+    updateMenuWidthUI();
+}
+
 bool ClassicXSettingsDialog::sidebarHasButtons() const
 {
     return (m_chkSidebarUserMenu && m_chkSidebarUserMenu->isChecked())
         || (m_chkSidebarShutdownMenu && m_chkSidebarShutdownMenu->isChecked())
         || (m_chkSidebarSettings && m_chkSidebarSettings->isChecked())
         || (m_chkSidebarDocuments && m_chkSidebarDocuments->isChecked())
-        || (m_chkSidebarImages && m_chkSidebarImages->isChecked());
+        || (m_chkSidebarImages && m_chkSidebarImages->isChecked())
+        || (m_chkSidebarDownloads && m_chkSidebarDownloads->isChecked());
 }
 
 void ClassicXSettingsDialog::updateSidebarWidthConstraints()
@@ -2728,6 +3128,12 @@ void ClassicXSettingsDialog::captureDialogState(TQMap<TQString, TQString>& m) co
     if (m_chkShowSpecialUserMenu) profilePutBool(m, "ShowSpecialUserMenu", m_chkShowSpecialUserMenu->isChecked());
     if (m_chkShowSpecialShutdownMenu) profilePutBool(m, "ShowSpecialShutdownMenu", m_chkShowSpecialShutdownMenu->isChecked());
 
+    if (m_chkAnimateOpening) profilePutBool(m, "AnimateOpening", m_chkAnimateOpening->isChecked());
+    if (m_chkMenuCentered) profilePutBool(m, "MenuCentered", m_chkMenuCentered->isChecked());
+    if (m_cmbMenuWidthMode && m_spinMenuMinWidth) {
+        int val = (m_cmbMenuWidthMode->currentItem() == 1) ? m_spinMenuMinWidth->value() : 0;
+        profilePutNum(m, "MenuMinWidth", val);
+    }
     if (m_chkShowRecentApps) profilePutBool(m, "ShowRecentApps", m_chkShowRecentApps->isChecked());
     if (m_cmbRecentMode) profilePutNum(m, "RecentMode", m_cmbRecentMode->currentItem());
     if (m_spinNumRecentApps) profilePutNum(m, "NumRecentApps", m_spinNumRecentApps->value());
@@ -2762,7 +3168,12 @@ void ClassicXSettingsDialog::captureDialogState(TQMap<TQString, TQString>& m) co
     if (m_chkSidebarSettings) profilePutBool(m, "ShowSidebarSettings", m_chkSidebarSettings->isChecked());
     if (m_chkSidebarDocuments) profilePutBool(m, "ShowSidebarDocuments", m_chkSidebarDocuments->isChecked());
     if (m_chkSidebarImages) profilePutBool(m, "ShowSidebarImages", m_chkSidebarImages->isChecked());
-    if (m_rbUserShutdownFullHeight) profilePutBool(m, "FullUserShutdownHeight", m_rbUserShutdownFullHeight->isChecked());
+    if (m_chkSidebarDownloads) profilePutBool(m, "ShowSidebarDownloads", m_chkSidebarDownloads->isChecked());
+    if (m_chkSidebarUserOnTop) profilePutBool(m, "SidebarUserOnTop", m_chkSidebarUserOnTop->isChecked());
+    if (m_cmbUserShutdownHeightMode) {
+        bool fullH = (m_cmbUserShutdownHeightMode->currentItem() == 0);
+        profilePutBool(m, "FullUserShutdownHeight", fullH);
+    }
     if (m_spinUserShutdownCustomHeight) profilePutNum(m, "CustomUserShutdownHeight", m_spinUserShutdownCustomHeight->value());
 
     if (m_chkShutdownPowerOff) profilePutBool(m, "ShutdownPowerOff", m_chkShutdownPowerOff->isChecked());
@@ -2770,10 +3181,14 @@ void ClassicXSettingsDialog::captureDialogState(TQMap<TQString, TQString>& m) co
     if (m_chkShutdownSuspend) profilePutBool(m, "ShutdownSuspend", m_chkShutdownSuspend->isChecked());
     if (m_chkShutdownHybridSuspend) profilePutBool(m, "ShutdownHybridSuspend", m_chkShutdownHybridSuspend->isChecked());
     if (m_chkShutdownHibernate) profilePutBool(m, "ShutdownHibernate", m_chkShutdownHibernate->isChecked());
+    if (m_cmbUserPicMode) profilePutNum(m, "UserPicMode", m_cmbUserPicMode->currentItem());
+    if (m_cmbUserPicEmbedded) profilePut(m, "UserPicEmbedded", m_cmbUserPicEmbedded->currentText());
+    profilePut(m, "UserPicCustomPath", m_userPicCustomPath);
+    if (m_chkInvertUserPic) profilePutBool(m, "InvertUserPic", m_chkInvertUserPic->isChecked());
+    if (m_chkColorizeUserPic) profilePutBool(m, "ColorizeUserPic", m_chkColorizeUserPic->isChecked());
+    profilePutColor(m, "UserPicColor", m_userPicColor);
 
-    int iconType = 0;
-    if (m_rbIconTDE && m_rbIconTDE->isChecked()) iconType = 1;
-    else if (m_rbIconCustom && m_rbIconCustom->isChecked()) iconType = 2;
+    int iconType = m_cmbIconType ? m_cmbIconType->currentItem() : 0;
     profilePutNum(m, "IconType", iconType);
     if (m_cmbEmbeddedIcon) profilePut(m, "EmbeddedIcon", m_cmbEmbeddedIcon->currentText());
     profilePut(m, "CustomIconPath", m_customIconPath);
@@ -2795,12 +3210,13 @@ void ClassicXSettingsDialog::captureDialogState(TQMap<TQString, TQString>& m) co
     }
 
     if (m_cmbSidebarPicMode) profilePutNum(m, "SidebarPictureMode", m_cmbSidebarPicMode->currentItem());
-    if (m_rbPicCustom) profilePutNum(m, "SidebarPictureSource", m_rbPicCustom->isChecked() ? 1 : 0);
+    if (m_cmbSidebarPicSource) profilePutNum(m, "SidebarPictureSource", (m_cmbSidebarPicSource->currentItem() == 1) ? 1 : 0);
     if (m_cmbPicEmbedded) profilePut(m, "SidebarPictureEmbedded", m_cmbPicEmbedded->currentText());
     profilePut(m, "SidebarPictureCustomPath", m_customPicPath);
     if (m_rbPicCrop) profilePutNum(m, "SidebarPictureWidthMode", m_rbPicCrop->isChecked() ? 1 : 0);
     if (m_rbPicAlignBottom) profilePutNum(m, "SidebarPictureAlignMode", m_rbPicAlignBottom->isChecked() ? 1 : 0);
     if (m_chkSidebarPicExtendEdges) profilePutBool(m, "SidebarPictureExtendEdges", m_chkSidebarPicExtendEdges->isChecked());
+    if (m_chkSidebarPicInvert) profilePutBool(m, "SidebarPictureInvert", m_chkSidebarPicInvert->isChecked());
     if (m_chkSidebarPicColorize) profilePutBool(m, "SidebarPictureColorize", m_chkSidebarPicColorize->isChecked());
     profilePutColor(m, "SidebarPictureColor", m_sidebarPicColor);
 
@@ -2809,6 +3225,7 @@ void ClassicXSettingsDialog::captureDialogState(TQMap<TQString, TQString>& m) co
     profilePut(m, "TopPicCustomLeft", m_topPicLeftPath);
     profilePut(m, "TopPicCustomCenter", m_topPicCenterPath);
     profilePut(m, "TopPicCustomRight", m_topPicRightPath);
+    if (m_chkTopPicInvert) profilePutBool(m, "TopPicInvert", m_chkTopPicInvert->isChecked());
     if (m_chkTopPicColorize) profilePutBool(m, "TopPicColorize", m_chkTopPicColorize->isChecked());
     profilePutColor(m, "TopPicColor", m_topPicColor);
     if (m_chkTopPicShowText) profilePutBool(m, "TopPicShowText", m_chkTopPicShowText->isChecked());
@@ -2817,6 +3234,8 @@ void ClassicXSettingsDialog::captureDialogState(TQMap<TQString, TQString>& m) co
     if (m_editTopPicText) profilePut(m, "TopPicText", m_editTopPicText->text());
     if (m_cmbTopPicTextColorMode) profilePutNum(m, "TopPicTextColorMode", m_cmbTopPicTextColorMode->currentItem());
     profilePutColor(m, "TopPicTextColor", m_topPicTextColor);
+    if (m_cmbTopPicTextAlign) profilePutNum(m, "TopPicTextAlign", m_cmbTopPicTextAlign->currentItem());
+    if (m_chkTopPicUseRam) profilePutBool(m, "TopPicShowRam", m_chkTopPicUseRam->isChecked());
     if (m_chkTopPicUseDate) profilePutBool(m, "TopPicShowDate", m_chkTopPicUseDate->isChecked());
     if (m_chkTopPicUseTime) profilePutBool(m, "TopPicShowTime", m_chkTopPicUseTime->isChecked());
 }
@@ -2832,6 +3251,20 @@ void ClassicXSettingsDialog::applyDialogState(const TQMap<TQString, TQString>& m
     if (profileHas(m, "TreeIconSize")) setComboIndex(m_cmbTreeIconSize, profileGetInt(m, "TreeIconSize"));
     if (profileHas(m, "AnimateOpening") && m_chkAnimateOpening)
         m_chkAnimateOpening->setChecked(profileGetBool(m, "AnimateOpening"));
+    if (profileHas(m, "MenuCentered") && m_chkMenuCentered)
+        m_chkMenuCentered->setChecked(profileGetBool(m, "MenuCentered"));
+    if (profileHas(m, "MenuMinWidth") && m_cmbMenuWidthMode && m_spinMenuMinWidth) {
+        int val = profileGetInt(m, "MenuMinWidth");
+        if (val > 0) {
+            m_cmbMenuWidthMode->setCurrentItem(1);
+            m_spinMenuMinWidth->setEnabled(true);
+            m_spinMenuMinWidth->setValue(val);
+        } else {
+            m_cmbMenuWidthMode->setCurrentItem(0);
+            m_spinMenuMinWidth->setEnabled(false);
+            m_spinMenuMinWidth->setValue(getAutoMenuWidth());
+        }
+    }
     if (profileHas(m, "AlwaysShowSearchBar") && m_chkAlwaysShowSearchBar)
         m_chkAlwaysShowSearchBar->setChecked(profileGetBool(m, "AlwaysShowSearchBar"));
 
@@ -2881,10 +3314,15 @@ void ClassicXSettingsDialog::applyDialogState(const TQMap<TQString, TQString>& m
     if (profileHas(m, "ShowSidebarSettings") && m_chkSidebarSettings) m_chkSidebarSettings->setChecked(profileGetBool(m, "ShowSidebarSettings"));
     if (profileHas(m, "ShowSidebarDocuments") && m_chkSidebarDocuments) m_chkSidebarDocuments->setChecked(profileGetBool(m, "ShowSidebarDocuments"));
     if (profileHas(m, "ShowSidebarImages") && m_chkSidebarImages) m_chkSidebarImages->setChecked(profileGetBool(m, "ShowSidebarImages"));
-    if (profileHas(m, "FullUserShutdownHeight") && m_rbUserShutdownFullHeight && m_rbUserShutdownCustomHeight) {
+    if (profileHas(m, "ShowSidebarDownloads") && m_chkSidebarDownloads) m_chkSidebarDownloads->setChecked(profileGetBool(m, "ShowSidebarDownloads"));
+    if (profileHas(m, "SidebarUserOnTop") && m_chkSidebarUserOnTop) m_chkSidebarUserOnTop->setChecked(profileGetBool(m, "SidebarUserOnTop"));
+    if (profileHas(m, "FullUserShutdownHeight") && m_cmbUserShutdownHeightMode) {
         const bool full = profileGetBool(m, "FullUserShutdownHeight");
-        m_rbUserShutdownFullHeight->setChecked(full);
-        m_rbUserShutdownCustomHeight->setChecked(!full);
+        m_cmbUserShutdownHeightMode->setCurrentItem(full ? 0 : 1);
+        if (m_spinUserShutdownCustomHeight) {
+            bool sideEnabled = m_chkShowSidebar && m_chkShowSidebar->isChecked();
+            m_spinUserShutdownCustomHeight->setEnabled(sideEnabled && !full);
+        }
     }
     if (profileHas(m, "CustomUserShutdownHeight") && m_spinUserShutdownCustomHeight)
         m_spinUserShutdownCustomHeight->setValue(profileGetInt(m, "CustomUserShutdownHeight"));
@@ -2894,12 +3332,33 @@ void ClassicXSettingsDialog::applyDialogState(const TQMap<TQString, TQString>& m
     if (profileHas(m, "ShutdownSuspend") && m_chkShutdownSuspend) m_chkShutdownSuspend->setChecked(profileGetBool(m, "ShutdownSuspend"));
     if (profileHas(m, "ShutdownHybridSuspend") && m_chkShutdownHybridSuspend) m_chkShutdownHybridSuspend->setChecked(profileGetBool(m, "ShutdownHybridSuspend"));
     if (profileHas(m, "ShutdownHibernate") && m_chkShutdownHibernate) m_chkShutdownHibernate->setChecked(profileGetBool(m, "ShutdownHibernate"));
+    if (profileHas(m, "UserPicMode") && m_cmbUserPicMode) {
+        int upm = profileGetInt(m, "UserPicMode");
+        m_cmbUserPicMode->setCurrentItem(upm);
+        if (m_userPicStack) m_userPicStack->raiseWidget(upm);
+    }
+    if (profileHas(m, "UserPicEmbedded") && m_cmbUserPicEmbedded) {
+        setComboByText(m_cmbUserPicEmbedded, profileGet(m, "UserPicEmbedded"));
+    }
+    if (profileHas(m, "UserPicCustomPath")) {
+        m_userPicCustomPath = profileGet(m, "UserPicCustomPath");
+        if (m_btnBrowseUserPic) {
+            TQToolTip::add(m_btnBrowseUserPic, m_userPicCustomPath.isEmpty() ? i18n("Choose image file...") : m_userPicCustomPath);
+        }
+    }
+    if (profileHas(m, "InvertUserPic") && m_chkInvertUserPic) m_chkInvertUserPic->setChecked(profileGetBool(m, "InvertUserPic"));
+    if (profileHas(m, "ColorizeUserPic") && m_chkColorizeUserPic) {
+        bool col = profileGetBool(m, "ColorizeUserPic");
+        m_chkColorizeUserPic->setChecked(col);
+        if (m_btnUserPicColor) m_btnUserPicColor->setEnabled(col);
+    }
+    if (profileHas(m, "UserPicColor")) {
+        m_userPicColor = profileGetColor(m, "UserPicColor");
+        if (m_btnUserPicColor) updateColorButton(m_btnUserPicColor, m_userPicColor);
+    }
 
-    if (profileHas(m, "IconType")) {
-        const int iconType = profileGetInt(m, "IconType");
-        if (iconType == 1 && m_rbIconTDE) m_rbIconTDE->setChecked(true);
-        else if (iconType == 2 && m_rbIconCustom) m_rbIconCustom->setChecked(true);
-        else if (m_rbIconEmbedded) m_rbIconEmbedded->setChecked(true);
+    if (profileHas(m, "IconType") && m_cmbIconType) {
+        m_cmbIconType->setCurrentItem(profileGetInt(m, "IconType"));
     }
     if (profileHas(m, "EmbeddedIcon")) setComboByText(m_cmbEmbeddedIcon, profileGet(m, "EmbeddedIcon"));
     if (profileHas(m, "CustomIconPath")) m_customIconPath = profileGet(m, "CustomIconPath");
@@ -2923,10 +3382,9 @@ void ClassicXSettingsDialog::applyDialogState(const TQMap<TQString, TQString>& m
     }
 
     if (profileHas(m, "SidebarPictureMode")) setComboIndex(m_cmbSidebarPicMode, profileGetInt(m, "SidebarPictureMode"));
-    if (profileHas(m, "SidebarPictureSource") && m_rbPicEmbedded && m_rbPicCustom) {
-        const bool custom = profileGetInt(m, "SidebarPictureSource") != 0;
-        m_rbPicCustom->setChecked(custom);
-        m_rbPicEmbedded->setChecked(!custom);
+    if (profileHas(m, "SidebarPictureSource") && m_cmbSidebarPicSource) {
+        const int src = profileGetInt(m, "SidebarPictureSource");
+        m_cmbSidebarPicSource->setCurrentItem(src == 1 ? 1 : 0);
     }
     if (profileHas(m, "SidebarPictureCustomPath")) m_customPicPath = profileGet(m, "SidebarPictureCustomPath");
     if (profileHas(m, "SidebarPictureWidthMode") && m_rbPicStretch && m_rbPicCrop) {
@@ -2941,6 +3399,8 @@ void ClassicXSettingsDialog::applyDialogState(const TQMap<TQString, TQString>& m
     }
     if (profileHas(m, "SidebarPictureExtendEdges") && m_chkSidebarPicExtendEdges)
         m_chkSidebarPicExtendEdges->setChecked(profileGetBool(m, "SidebarPictureExtendEdges"));
+    if (profileHas(m, "SidebarPictureInvert") && m_chkSidebarPicInvert)
+        m_chkSidebarPicInvert->setChecked(profileGetBool(m, "SidebarPictureInvert"));
     if (profileHas(m, "SidebarPictureColorize") && m_chkSidebarPicColorize)
         m_chkSidebarPicColorize->setChecked(profileGetBool(m, "SidebarPictureColorize"));
     if (profileHas(m, "SidebarPictureColor")) m_sidebarPicColor = profileGetColor(m, "SidebarPictureColor");
@@ -2962,21 +3422,25 @@ void ClassicXSettingsDialog::applyDialogState(const TQMap<TQString, TQString>& m
         if (m_lblTopPicRightPath)
             m_lblTopPicRightPath->setText(m_topPicRightPath.isEmpty() ? TQString::fromLatin1("None") : m_topPicRightPath.section('/', -1));
     }
+    if (profileHas(m, "TopPicInvert") && m_chkTopPicInvert) m_chkTopPicInvert->setChecked(profileGetBool(m, "TopPicInvert"));
     if (profileHas(m, "TopPicColorize") && m_chkTopPicColorize) m_chkTopPicColorize->setChecked(profileGetBool(m, "TopPicColorize"));
     if (profileHas(m, "TopPicColor")) m_topPicColor = profileGetColor(m, "TopPicColor");
 
     if (m_chkTopPicUseUser) m_chkTopPicUseUser->blockSignals(true);
     if (m_chkTopPicUseCustom) m_chkTopPicUseCustom->blockSignals(true);
+    if (m_chkTopPicUseRam) m_chkTopPicUseRam->blockSignals(true);
     if (m_chkTopPicUseDate) m_chkTopPicUseDate->blockSignals(true);
     if (m_chkTopPicUseTime) m_chkTopPicUseTime->blockSignals(true);
     if (m_chkTopPicShowText) m_chkTopPicShowText->blockSignals(true);
     if (profileHas(m, "TopPicShowText") && m_chkTopPicShowText) m_chkTopPicShowText->setChecked(profileGetBool(m, "TopPicShowText"));
     if (profileHas(m, "TopPicShowUser") && m_chkTopPicUseUser) m_chkTopPicUseUser->setChecked(profileGetBool(m, "TopPicShowUser"));
     if (profileHas(m, "TopPicShowCustomText") && m_chkTopPicUseCustom) m_chkTopPicUseCustom->setChecked(profileGetBool(m, "TopPicShowCustomText"));
+    if (profileHas(m, "TopPicShowRam") && m_chkTopPicUseRam) m_chkTopPicUseRam->setChecked(profileGetBool(m, "TopPicShowRam"));
     if (profileHas(m, "TopPicShowDate") && m_chkTopPicUseDate) m_chkTopPicUseDate->setChecked(profileGetBool(m, "TopPicShowDate"));
     if (profileHas(m, "TopPicShowTime") && m_chkTopPicUseTime) m_chkTopPicUseTime->setChecked(profileGetBool(m, "TopPicShowTime"));
     if (m_chkTopPicUseUser) m_chkTopPicUseUser->blockSignals(false);
     if (m_chkTopPicUseCustom) m_chkTopPicUseCustom->blockSignals(false);
+    if (m_chkTopPicUseRam) m_chkTopPicUseRam->blockSignals(false);
     if (m_chkTopPicUseDate) m_chkTopPicUseDate->blockSignals(false);
     if (m_chkTopPicUseTime) m_chkTopPicUseTime->blockSignals(false);
     if (m_chkTopPicShowText) m_chkTopPicShowText->blockSignals(false);
@@ -2984,6 +3448,7 @@ void ClassicXSettingsDialog::applyDialogState(const TQMap<TQString, TQString>& m
     if (profileHas(m, "TopPicText") && m_editTopPicText) m_editTopPicText->setText(profileGet(m, "TopPicText"));
     if (profileHas(m, "TopPicTextColorMode")) setComboIndex(m_cmbTopPicTextColorMode, profileGetInt(m, "TopPicTextColorMode"));
     if (profileHas(m, "TopPicTextColor")) m_topPicTextColor = profileGetColor(m, "TopPicTextColor");
+    if (profileHas(m, "TopPicTextAlign")) setComboIndex(m_cmbTopPicTextAlign, profileGetInt(m, "TopPicTextAlign"));
 
     onShowAppIconsToggled(m_chkShowAppIcons && m_chkShowAppIcons->isChecked());
     updateShownAppsCountEnabled();
@@ -2992,7 +3457,7 @@ void ClassicXSettingsDialog::applyDialogState(const TQMap<TQString, TQString>& m
         onShowSidebarToggled(m_chkShowSidebar->isChecked());
     if (m_chkSidebarHover)
         onSidebarHoverToggled(m_chkSidebarHover->isChecked());
-    onUserShutdownHeightToggled(m_rbUserShutdownFullHeight && m_rbUserShutdownFullHeight->isChecked());
+    onUserShutdownHeightModeChanged(0);
     refreshColorButtons();
     updateFontUI();
     updateSidebarPictureUI();
@@ -3011,6 +3476,7 @@ void ClassicXSettingsDialog::applyDialogState(const TQMap<TQString, TQString>& m
         updateColorButton(m_btnTopPicColor, m_topPicColor);
     onTopPicTextColorModeChanged(m_cmbTopPicTextColorMode ? m_cmbTopPicTextColorMode->currentItem() : 0);
     updateIconPreview();
+    updateUserPicPreview();
     updateUiIconPreviews();
     syncUiIconPresetCombo();
     updateSpecialItemsEnableState();
@@ -3133,6 +3599,7 @@ void ClassicXSettingsDialog::connectProfileDirtyTracking()
 {
     connectProfileDirty(m_chkShowAppIcons, TQT_SIGNAL(toggled(bool)), this);
     connectProfileDirty(m_chkAnimateOpening, TQT_SIGNAL(toggled(bool)), this);
+    connectProfileDirty(m_chkMenuCentered, TQT_SIGNAL(toggled(bool)), this);
     connectProfileDirty(m_chkAlwaysShowSearchBar, TQT_SIGNAL(toggled(bool)), this);
     connectProfileDirty(m_chkShowRunCommand, TQT_SIGNAL(toggled(bool)), this);
     connectProfileDirty(m_chkControlCenter, TQT_SIGNAL(toggled(bool)), this);
@@ -3152,40 +3619,47 @@ void ClassicXSettingsDialog::connectProfileDirtyTracking()
     connectProfileDirty(m_chkSidebarSettings, TQT_SIGNAL(toggled(bool)), this);
     connectProfileDirty(m_chkSidebarDocuments, TQT_SIGNAL(toggled(bool)), this);
     connectProfileDirty(m_chkSidebarImages, TQT_SIGNAL(toggled(bool)), this);
+    connectProfileDirty(m_chkSidebarDownloads, TQT_SIGNAL(toggled(bool)), this);
+    connectProfileDirty(m_chkSidebarUserOnTop, TQT_SIGNAL(toggled(bool)), this);
     connectProfileDirty(m_chkShutdownPowerOff, TQT_SIGNAL(toggled(bool)), this);
     connectProfileDirty(m_chkShutdownReboot, TQT_SIGNAL(toggled(bool)), this);
     connectProfileDirty(m_chkShutdownSuspend, TQT_SIGNAL(toggled(bool)), this);
     connectProfileDirty(m_chkShutdownHybridSuspend, TQT_SIGNAL(toggled(bool)), this);
     connectProfileDirty(m_chkShutdownHibernate, TQT_SIGNAL(toggled(bool)), this);
+    connectProfileDirty(m_cmbUserPicMode, TQT_SIGNAL(activated(int)), this);
+    connectProfileDirty(m_cmbUserPicEmbedded, TQT_SIGNAL(activated(int)), this);
+    connectProfileDirty(m_chkInvertUserPic, TQT_SIGNAL(toggled(bool)), this);
+    connectProfileDirty(m_chkColorizeUserPic, TQT_SIGNAL(toggled(bool)), this);
     connectProfileDirty(m_chkFullScaleStartIcon, TQT_SIGNAL(toggled(bool)), this);
     connectProfileDirty(m_chkInvertStartIcon, TQT_SIGNAL(toggled(bool)), this);
     connectProfileDirty(m_chkColorizeStartIcon, TQT_SIGNAL(toggled(bool)), this);
     connectProfileDirty(m_chkInvertUiIcons, TQT_SIGNAL(toggled(bool)), this);
     connectProfileDirty(m_chkColorizeUiIcons, TQT_SIGNAL(toggled(bool)), this);
     connectProfileDirty(m_chkSidebarPicExtendEdges, TQT_SIGNAL(toggled(bool)), this);
+    connectProfileDirty(m_chkSidebarPicInvert, TQT_SIGNAL(toggled(bool)), this);
     connectProfileDirty(m_chkSidebarPicColorize, TQT_SIGNAL(toggled(bool)), this);
+    connectProfileDirty(m_chkTopPicInvert, TQT_SIGNAL(toggled(bool)), this);
     connectProfileDirty(m_chkTopPicColorize, TQT_SIGNAL(toggled(bool)), this);
     connectProfileDirty(m_chkTopPicShowText, TQT_SIGNAL(toggled(bool)), this);
     connectProfileDirty(m_chkTopPicUseUser, TQT_SIGNAL(toggled(bool)), this);
     connectProfileDirty(m_chkTopPicUseCustom, TQT_SIGNAL(toggled(bool)), this);
+    connectProfileDirty(m_cmbTopPicTextAlign, TQT_SIGNAL(activated(int)), this);
+    connectProfileDirty(m_chkTopPicUseRam, TQT_SIGNAL(toggled(bool)), this);
     connectProfileDirty(m_chkTopPicUseDate, TQT_SIGNAL(toggled(bool)), this);
     connectProfileDirty(m_chkTopPicUseTime, TQT_SIGNAL(toggled(bool)), this);
 
-    connectProfileDirty(m_rbUserShutdownFullHeight, TQT_SIGNAL(toggled(bool)), this);
-    connectProfileDirty(m_rbUserShutdownCustomHeight, TQT_SIGNAL(toggled(bool)), this);
-    connectProfileDirty(m_rbPicEmbedded, TQT_SIGNAL(toggled(bool)), this);
-    connectProfileDirty(m_rbPicCustom, TQT_SIGNAL(toggled(bool)), this);
+    connectProfileDirty(m_cmbUserShutdownHeightMode, TQT_SIGNAL(activated(int)), this);
+    connectProfileDirty(m_cmbSidebarPicSource, TQT_SIGNAL(activated(int)), this);
     connectProfileDirty(m_rbPicStretch, TQT_SIGNAL(toggled(bool)), this);
     connectProfileDirty(m_rbPicCrop, TQT_SIGNAL(toggled(bool)), this);
     connectProfileDirty(m_rbPicAlignTop, TQT_SIGNAL(toggled(bool)), this);
     connectProfileDirty(m_rbPicAlignBottom, TQT_SIGNAL(toggled(bool)), this);
-    connectProfileDirty(m_rbIconEmbedded, TQT_SIGNAL(toggled(bool)), this);
-    connectProfileDirty(m_rbIconTDE, TQT_SIGNAL(toggled(bool)), this);
-    connectProfileDirty(m_rbIconCustom, TQT_SIGNAL(toggled(bool)), this);
+    connectProfileDirty(m_cmbIconType, TQT_SIGNAL(activated(int)), this);
 
     connectProfileDirty(m_cmbMenuEntryFormat, TQT_SIGNAL(activated(int)), this);
     connectProfileDirty(m_cmbTreeIconSize, TQT_SIGNAL(activated(int)), this);
     connectProfileDirty(m_cmbRecentMode, TQT_SIGNAL(activated(int)), this);
+    connectProfileDirty(m_cmbMenuWidthMode, TQT_SIGNAL(activated(int)), this);
     connectProfileDirty(m_cmbColorMode, TQT_SIGNAL(activated(int)), this);
     connectProfileDirty(m_cmbFontMode, TQT_SIGNAL(activated(int)), this);
     connectProfileDirty(m_cmbSidebarPicMode, TQT_SIGNAL(activated(int)), this);
@@ -3201,6 +3675,7 @@ void ClassicXSettingsDialog::connectProfileDirtyTracking()
         connectProfileDirty(m_uiIconControls[i].cmbSource, TQT_SIGNAL(activated(int)), this);
 
     connectProfileDirty(m_spinNumRecentApps, TQT_SIGNAL(valueChanged(int)), this);
+    connectProfileDirty(m_spinMenuMinWidth, TQT_SIGNAL(valueChanged(int)), this);
     connectProfileDirty(m_spinMaxRecentDocs, TQT_SIGNAL(valueChanged(int)), this);
     connectProfileDirty(m_spinMaxSearchResults, TQT_SIGNAL(valueChanged(int)), this);
     connectProfileDirty(m_spinWidth, TQT_SIGNAL(valueChanged(int)), this);
