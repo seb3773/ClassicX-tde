@@ -87,6 +87,14 @@ apt-ftparchive \
   -o APT::FTPArchive::Release::Description="APT Repository for Classic-X Trinity Desktop (TDE) Applet" \
   release "$PAGES_DIR/dists/stable" > "$PAGES_DIR/dists/stable/Release"
 
+# Copy assets (logo, etc.)
+if [ -f "$REPO_DIR/about.png" ]; then
+    cp -a "$REPO_DIR/about.png" "$PAGES_DIR/"
+fi
+if [ -f "$REPO_DIR/CX.png" ]; then
+    cp -a "$REPO_DIR/CX.png" "$PAGES_DIR/"
+fi
+
 # Create .nojekyll to prevent GitHub Pages Jekyll processing
 touch "$PAGES_DIR/.nojekyll"
 
@@ -104,6 +112,7 @@ cat << EOF > "$PAGES_DIR/index.html"
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Classic-X TDE - APT Repository</title>
+  <link rel="icon" type="image/png" href="CX.png">
   <style>
     :root {
       --bg: #12141a;
@@ -130,6 +139,17 @@ cat << EOF > "$PAGES_DIR/index.html"
     header {
       text-align: center;
       margin-bottom: 40px;
+    }
+    .logo {
+      width: 96px;
+      height: 96px;
+      margin-bottom: 16px;
+      filter: drop-shadow(0 8px 24px rgba(58, 134, 255, 0.4));
+      border-radius: 50%;
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .logo:hover {
+      transform: scale(1.1) rotate(4deg);
     }
     .badge {
       display: inline-block;
@@ -225,6 +245,8 @@ cat << EOF > "$PAGES_DIR/index.html"
 <body>
   <div class="container">
     <header>
+      <img src="about.png" alt="Classic-X Logo" class="logo">
+      <br>
       <div class="badge">Official APT Repository</div>
       <h1>Classic-X Menu for Trinity (TDE)</h1>
       <p class="lead">Automatic updates for Debian, Q4OS, and Ubuntu-based TDE systems.</p>
