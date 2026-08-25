@@ -199,6 +199,28 @@ cat << EOF > "$PAGES_DIR/index.html"
       color: #38bdf8;
       margin-bottom: 12px;
     }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-top: 14px;
+    }
+    .feature-item {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+    }
+    .feature-item h3 {
+      font-size: 1rem;
+      color: #38bdf8;
+      margin-bottom: 4px;
+    }
+    .feature-item p {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
     .btn-group {
       display: flex;
       flex-wrap: wrap;
@@ -273,8 +295,38 @@ sudo apt install tde-kicker-classicx-applet</code></pre>
       </div>
     </div>
 
+    <div class="card">
+      <h2>✨ Key Features</h2>
+      <div class="features-grid">
+        <div class="feature-item">
+          <h3>⚡ Instant Type-to-Search</h3>
+          <p>Start typing anywhere to filter applications instantly. Features typo-tolerant fuzzy suggestions and multilingual accent normalization.</p>
+        </div>
+        <div class="feature-item">
+          <h3>🎨 20 Built-in Profiles</h3>
+          <p>Instant visual transformations embedded as ultra-compact bytecode (&lt; 2.8 KB). Custom palettes, transparency, and font support.</p>
+        </div>
+        <div class="feature-item">
+          <h3>🖼️ 3-Part Header Banner</h3>
+          <p>Composite Left/Center/Right graphics with live overlays: User Name, Custom text, Free RAM probe (GB), Date, and Time (HH:MM).</p>
+        </div>
+        <div class="feature-item">
+          <h3>📌 Quick-Access Sidebar</h3>
+          <p>Quick access to User, Shutdown, Documents, Pictures, Downloads, and Settings with configurable width and hover-triggered submenus.</p>
+        </div>
+        <div class="feature-item">
+          <h3>🎬 Smooth Opening Animation</h3>
+          <p>Fluid, tear-free window sliding animation with sub-millisecond geometry calculation adapting to panel position and screen edges.</p>
+        </div>
+        <div class="feature-item">
+          <h3>🚀 Zero-Lag C++ Architecture</h3>
+          <p>Standalone Kicker applet plugin with L1-cache optimized algorithms, sub-microsecond kernel probes, and zero external runtime dependencies.</p>
+        </div>
+      </div>
+    </div>
+
     <footer>
-      <p>Source Code & Releases: <a href="https://github.com/seb3773/ClassicX-tde" target="_blank">github.com/seb3773/ClassicX-tde</a></p>
+      <p>Source Code &amp; Releases: <a href="https://github.com/seb3773/ClassicX-tde" target="_blank">github.com/seb3773/ClassicX-tde</a></p>
       <p style="margin-top: 6px;">Developed with ❤️ for the Trinity Desktop Environment community.</p>
     </footer>
   </div>
