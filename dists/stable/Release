@@ -1,24 +1,24 @@
 Architectures: amd64
 Codename: stable
 Components: main
-Date: Tue, 25 Aug 2026 15:01:47 +0000
+Date: Tue, 25 Aug 2026 15:05:01 +0000
 Description: APT Repository for Classic-X Trinity Desktop (TDE) Applet
 Label: Classic-X TDE Repository
 Origin: ClassicX
 Suite: stable
 MD5Sum:
- d4bfd4ca3277e662b22cd920ce9825fd              227 Release
+ 649f9267bc309a54176f124980cdae34              227 Release
  47eed03c6c371ef5c9e27b441f0c8676              689 main/binary-amd64/Packages
- 336583aa4b7d471c6f06d832e5c1eb88              468 main/binary-amd64/Packages.gz
+ 594e2b511335ec16575fc5b372ea8efa              468 main/binary-amd64/Packages.gz
 SHA1:
- bb793d99f5703f1c8370acf33dad64a7e5be357b              227 Release
+ 8960d006188aa7b348ac80928bf7ec21606de78f              227 Release
  dda7b79a307e39b6ca1a8ed97d027a6f3bfcbf9f              689 main/binary-amd64/Packages
- 5eb4fab246591c277dd1ab304af30dd719d25c51              468 main/binary-amd64/Packages.gz
+ f0e2952f5b0db3e7d4a13a43b86b6a8b53275ef6              468 main/binary-amd64/Packages.gz
 SHA256:
- d581d92e0f0d90679a7601278673ebfe959a9dd84d23a1f7bbd17bcbc552b49d              227 Release
+ b9422c68f8ce4acd600599b9657a736e56dfab2d603470ace093d6c1dcf7027f              227 Release
  46ea498b66b44c479c5a0a30aac3ef4aa6551d00b09f41fb73cce04888623089              689 main/binary-amd64/Packages
- 3fe7866d4856cb732dccf0bb600c48746379d10f7041c59257f61d235ce00e95              468 main/binary-amd64/Packages.gz
+ ce995109cf3200f438f6bce2848398d06e5bfeda454e40c0c35d8630dff08873              468 main/binary-amd64/Packages.gz
 SHA512:
- 4029d8e77310376756568821914fa987269c7160efc6b38c5bab4a8b5abfb9fa114d58977a4e42a0e3a646528e4d3c3288f7949750e99d9dfcea8e71fa64e022              227 Release
+ 64dd347c3fe961c3eae8f49295361028c59086bbfdfcabf3b198ad54045968d427a5fefbbf328444235ef9b3ebcb9482b2d6d37154041babeb10af22395c0888              227 Release
  e5ac95d72ea26c7ad777b8383730574b00a2deb7cc35f65b0a03e87eaa1e173f88c0c75c0a91a2d7bf3a535bbb280875f9a16d4a94befca609ddb7d6dd3bd587              689 main/binary-amd64/Packages
- e1c75207d6d44d99d2a609e9cc8527eeb01c0a1f4c96424ca36ec4fd0dca752ea0a5beb6b5d2abb4be766e33a5ae9aa2d4f1407103540f2b4e7c843eae268397              468 main/binary-amd64/Packages.gz
+ a4f1664bcb11fa17b7a4307c18cb45a3af3214837e705f0233608c586df7270b7428dfcf6d594520ff109b91ffec676ea80290c98c2d132e1932044bbc0739b0              468 main/binary-amd64/Packages.gz
