@@ -14,3 +14,35 @@ Description: Classic-X Menu Kicker Applet (Standalone Plugin)
  Standalone Kicker applet providing the Classic-X Start Menu replacement with
  instant search filtering and sidebar buttons, without needing to patch tdebase.
 
+Package: tde-kicker-classicx-applet
+Version: 1.0.3~build.20260827.021831
+Architecture: amd64
+Maintainer: seb3773 <seb3773@github.com>
+Depends: libtqt3-mt, tdelibs14-trinity, kicker-trinity
+Filename: pool/main/t/tde-kicker-classicx-applet/tde-kicker-classicx-applet_1.0.3~build.20260827.021831_amd64.deb
+Size: 257408
+MD5sum: d07351505de14f8168141c8043dabf43
+SHA1: 5abb31dc4dc644560b90dd72e301219af6597a8a
+SHA256: d7666efb63871558a60d97a0c6960abeab6c780381bf3b00b9381bc78b79bdad
+Section: x11
+Priority: optional
+Description: Classic-X Menu Kicker Applet (Standalone Plugin)
+ Standalone Kicker applet providing the Classic-X Start Menu replacement with
+ instant search filtering and sidebar buttons, without needing to patch tdebase.
+
+Package: tde-kicker-classicx-applet
+Version: 1.0.4-1
+Architecture: amd64
+Maintainer: seb3773 <seb3773@github.com>
+Depends: libtqt3-mt, tdelibs14-trinity, kicker-trinity
+Filename: pool/main/t/tde-kicker-classicx-applet/tde-kicker-classicx-applet_1.0.4_amd64.deb
+Size: 257508
+MD5sum: 876051ae4ebe1e4d6ff8ed0e75cca34e
+SHA1: 2d925eeae9ee1b118574206e90a26c1ade4e5008
+SHA256: 2c8648877c03aab7249ba6a29cda2dfbc7e101c026a320b498f901b589f9bdab
+Section: x11
+Priority: optional
+Description: Classic-X Menu Kicker Applet (Standalone Plugin)
+ Standalone Kicker applet providing the Classic-X Start Menu replacement with
+ instant search filtering and sidebar buttons, without needing to patch tdebase.
+

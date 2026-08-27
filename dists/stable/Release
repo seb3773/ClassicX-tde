@@ -1,24 +1,24 @@
 Architectures: amd64
 Codename: stable
 Components: main
-Date: Tue, 25 Aug 2026 15:41:57 +0000
+Date: Thu, 27 Aug 2026 00:27:16 +0000
 Description: APT Repository for Classic-X Trinity Desktop (TDE) Applet
 Label: Classic-X TDE Repository
 Origin: ClassicX
 Suite: stable
 MD5Sum:
- 1c7a225417fcf9b6a0f11e89a5f70b2f              227 Release
- 47eed03c6c371ef5c9e27b441f0c8676              689 main/binary-amd64/Packages
- 52e2c9684d71e764967e14c2012d584f              468 main/binary-amd64/Packages.gz
+ 6e0d1fe3dcf39b454368c4841e9d7a59              227 Release
+ 5afb7d5405cac9e230b6554d2a94cfeb             2109 main/binary-amd64/Packages
+ c494d729de0c6149f7d2c90dbe6f6b38              707 main/binary-amd64/Packages.gz
 SHA1:
- 48f1790f0140b4fc3e0fec59f652f305c6a08d8c              227 Release
- dda7b79a307e39b6ca1a8ed97d027a6f3bfcbf9f              689 main/binary-amd64/Packages
- 9b654c6ea7da67d0fdcc8177f2de953f920e44ed              468 main/binary-amd64/Packages.gz
+ b874edb570a16edacb693abbb4e2c435f1b3ce27              227 Release
+ 23b32c591bf6520448309c8eba98c2ae5b425ed9             2109 main/binary-amd64/Packages
+ 89b90bad9b15a16c77fdbe493201184360cba8fe              707 main/binary-amd64/Packages.gz
 SHA256:
- 880abfb77fcef0b5984990ea76d1085a19d455f964bbe561bd31e1b1451ca634              227 Release
- 46ea498b66b44c479c5a0a30aac3ef4aa6551d00b09f41fb73cce04888623089              689 main/binary-amd64/Packages
- ac99f728f0871bea8855f7b9f519763bed967313a935095238781a96870e6d48              468 main/binary-amd64/Packages.gz
+ 8ff91e555c57968822c4b7eb155dcdc85a1f6bab4f136f5b7367ee267de7c39f              227 Release
+ 3965a6cef6fe140ccc76009972f33905b62d907cc784a6ce3ea9937b1aef4c96             2109 main/binary-amd64/Packages
+ cf7e36b876466749e1afec8d6654d42c75cd1663b7f81e50ba63a3f7d1ec542b              707 main/binary-amd64/Packages.gz
 SHA512:
- 5a8533e297906640b62ed8aa1c076a6efffb1a771c5034fac72bf15f79771ff1ace4a2c6d03391b0bc5a452c4447080d795d841572938a2f9bbdb77137312cab              227 Release
- e5ac95d72ea26c7ad777b8383730574b00a2deb7cc35f65b0a03e87eaa1e173f88c0c75c0a91a2d7bf3a535bbb280875f9a16d4a94befca609ddb7d6dd3bd587              689 main/binary-amd64/Packages
- 20994e549d42d44dd1b31442e70cb8e1bd345fcdeb23ecf4b76b52019885caab73207b1baa4886de93fcf717d6219d6372f080fd312de6923b1a5ce7e6fac7e9              468 main/binary-amd64/Packages.gz
+ cdd153d3c39d13614261f90fda7fcb62753643b513aec9c4e0a9bc89bde0c7cc927b287ef626c14e8a4a5e303c6821b58ba4b241e141b0bb3606b36717c2a876              227 Release
+ aef830a521e6dfa2c23643a5787fa388dc3428107dafefeb1f647a68c454889ed9aaf9ec6973b057405de36298215c158c52913f3cf8abaa9e09bd2bfe2b6d44             2109 main/binary-amd64/Packages
+ 4e04122602a8d76d7beedf5a2f0e06f25879dd16bca0660d851228067976b6dfc85952ebb00781e45b66c25b865ff52a7f5fe5b143f7bcc4fac44f1522650733              707 main/binary-amd64/Packages.gz
