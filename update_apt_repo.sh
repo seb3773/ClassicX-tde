@@ -87,7 +87,7 @@ apt-ftparchive \
   -o APT::FTPArchive::Release::Description="APT Repository for Classic-X Trinity Desktop (TDE) Applet" \
   release "$PAGES_DIR/dists/stable" > "$PAGES_DIR/dists/stable/Release"
 
-# Copy assets (logo, etc.)
+# Copy assets (logo, favicon, screenshots, etc.)
 if [ -f "$REPO_DIR/about.png" ]; then
     cp -a "$REPO_DIR/about.png" "$PAGES_DIR/"
 fi
@@ -96,6 +96,10 @@ if [ -f "$REPO_DIR/CX.png" ]; then
 fi
 if [ -f "$REPO_DIR/CX_fav.png" ]; then
     cp -a "$REPO_DIR/CX_fav.png" "$PAGES_DIR/"
+fi
+if [ -d "$REPO_DIR/screenshots" ]; then
+    mkdir -p "$PAGES_DIR/screenshots"
+    cp -a "$REPO_DIR/screenshots"/* "$PAGES_DIR/screenshots/" 2>/dev/null || true
 fi
 
 # Create .nojekyll to prevent GitHub Pages Jekyll processing
@@ -121,18 +125,28 @@ cat << EOF > "$PAGES_DIR/index.html"
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Classic-X TDE v${LATEST_VERSION} - APT Repository</title>
   <link rel="icon" type="image/png" href="CX_fav.png">
+  <meta name="description" content="Official APT Repository and download portal for Classic-X - Modern KMenu Applet for Trinity Desktop Environment (TDE).">
   <style>
     :root {
       --bg: #12141a;
       --card-bg: #1c1f2b;
+      --card-hover: #222738;
       --accent: #3a86ff;
       --accent-grad: linear-gradient(135deg, #3a86ff, #00f2fe);
       --text: #e2e8f0;
       --text-muted: #94a3b8;
       --code-bg: #0f1117;
       --border: #2e364f;
+      --radius: 12px;
+      --radius-sm: 8px;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background-color: var(--bg);
@@ -140,28 +154,33 @@ cat << EOF > "$PAGES_DIR/index.html"
       line-height: 1.6;
       padding: 40px 20px;
     }
+
     .container {
-      max-width: 800px;
+      max-width: 840px;
       margin: 0 auto;
     }
+
     header {
       text-align: center;
       margin-bottom: 40px;
     }
+
     .logo {
-      width: 96px;
-      height: 96px;
+      width: 110px;
+      height: 110px;
       margin-bottom: 16px;
-      filter: drop-shadow(0 8px 24px rgba(58, 134, 255, 0.4));
+      filter: drop-shadow(0 8px 24px rgba(58, 134, 255, 0.45));
       border-radius: 50%;
       transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
+
     .logo:hover {
-      transform: scale(1.1) rotate(4deg);
+      transform: scale(1.08) rotate(3deg);
     }
+
     .badge {
       display: inline-block;
-      padding: 4px 12px;
+      padding: 4px 14px;
       font-size: 0.85rem;
       font-weight: 600;
       color: #fff;
@@ -171,6 +190,7 @@ cat << EOF > "$PAGES_DIR/index.html"
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
+
     .version-pill {
       display: inline-block;
       font-size: 1.1rem;
@@ -183,173 +203,513 @@ cat << EOF > "$PAGES_DIR/index.html"
       vertical-align: middle;
       margin-left: 8px;
     }
+
     h1 {
-      font-size: 2.2rem;
+      font-size: 2.4rem;
       font-weight: 700;
       margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
+
     p.lead {
       font-size: 1.1rem;
       color: var(--text-muted);
+      max-width: 680px;
+      margin: 0 auto;
     }
+
+    .header-actions {
+      display: flex;
+      justify-content: center;
+      margin-top: 18px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 18px;
+      border-radius: var(--radius-sm);
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-secondary {
+      background: var(--card-bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--card-hover);
+      border-color: #38bdf8;
+      transform: translateY(-2px);
+    }
+
     .card {
       background: var(--card-bg);
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: var(--radius);
       padding: 24px;
       margin-bottom: 24px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     }
+
     h2 {
       font-size: 1.3rem;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
       display: flex;
       align-items: center;
       gap: 10px;
       color: #fff;
     }
+
+    /* Terminal & Code snippet box */
+    .code-container {
+      position: relative;
+      margin-top: 10px;
+    }
+
     pre {
       background: var(--code-bg);
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: var(--radius-sm);
       padding: 16px;
+      padding-right: 80px;
       overflow-x: auto;
       font-family: "Courier New", Courier, monospace;
-      font-size: 0.95rem;
+      font-size: 0.92rem;
       color: #38bdf8;
-      margin-bottom: 12px;
+      line-height: 1.6;
     }
+
+    .copy-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: var(--text);
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .copy-btn:hover {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    /* Downloads Grid */
+    .downloads-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .download-card {
+      background: #141722;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.2s ease;
+    }
+
+    .download-card:hover {
+      transform: translateY(-2px);
+      border-color: #38bdf8;
+      background: var(--card-hover);
+    }
+
+    .download-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .download-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .download-tag {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 12px;
+      background: rgba(58, 134, 255, 0.15);
+      color: #60a5fa;
+      border: 1px solid rgba(58, 134, 255, 0.3);
+    }
+
+    .download-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+      flex-grow: 1;
+    }
+
+    .btn-download {
+      background: #1e293b;
+      color: #38bdf8;
+      border: 1px solid #334155;
+      padding: 8px 14px;
+      border-radius: 6px;
+      text-align: center;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+
+    .btn-download:hover {
+      background: var(--accent);
+      color: #ffffff;
+      border-color: var(--accent);
+    }
+
     .features-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       gap: 16px;
       margin-top: 14px;
     }
+
     .feature-item {
-      background: var(--code-bg);
+      background: #141722;
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 14px 16px;
+      border-radius: var(--radius-sm);
+      padding: 16px;
     }
-    .feature-item h3 {
-      font-size: 1rem;
-      color: #38bdf8;
+
+    .feature-icon {
+      font-size: 1.4rem;
+      margin-bottom: 6px;
+      display: inline-block;
+    }
+
+    .feature-title {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: #ffffff;
       margin-bottom: 4px;
     }
-    .feature-item p {
-      font-size: 0.88rem;
+
+    .feature-text {
+      font-size: 0.85rem;
       color: var(--text-muted);
-      line-height: 1.5;
+      line-height: 1.45;
     }
-    .btn-group {
-      display: flex;
-      flex-wrap: wrap;
+
+    /* Screenshots gallery */
+    .screenshots-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 12px;
-      margin-top: 16px;
+      margin-top: 14px;
     }
-    .btn {
-      display: inline-flex;
+
+    .screenshot-thumb {
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      background: #141722;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+      aspect-ratio: 16 / 10;
+    }
+
+    .screenshot-thumb:hover {
+      transform: scale(1.03);
+      border-color: #38bdf8;
+    }
+
+    .screenshot-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Modal Lightbox */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.88);
+      backdrop-filter: blur(8px);
       align-items: center;
-      gap: 8px;
-      padding: 10px 20px;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 0.95rem;
-      transition: all 0.2s ease;
+      justify-content: center;
+      padding: 20px;
     }
-    .btn-primary {
-      background: var(--accent-grad);
-      color: #fff;
+
+    .modal.active {
+      display: flex;
     }
-    .btn-primary:hover {
-      opacity: 0.9;
-      transform: translateY(-2px);
-    }
-    .btn-secondary {
-      background: var(--code-bg);
-      color: var(--text);
+
+    .modal img {
+      max-width: 90vw;
+      max-height: 85vh;
+      border-radius: var(--radius-sm);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
       border: 1px solid var(--border);
     }
-    .btn-secondary:hover {
-      background: #1e2230;
-      transform: translateY(-2px);
+
+    .modal-close {
+      position: absolute;
+      top: 20px;
+      right: 28px;
+      color: #fff;
+      font-size: 2rem;
+      cursor: pointer;
+      font-weight: bold;
     }
+
     footer {
       text-align: center;
-      margin-top: 40px;
-      font-size: 0.9rem;
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
       color: var(--text-muted);
+      font-size: 0.95rem;
     }
-    footer a { color: var(--accent); text-decoration: none; }
+
+    footer a {
+      color: #38bdf8;
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    .footer-links {
+      margin-top: 8px;
+      font-size: 0.88rem;
+    }
   </style>
 </head>
 <body>
+
   <div class="container">
+
+    <!-- Header -->
     <header>
       <img src="about.png" alt="Classic-X Logo" class="logo">
       <br>
-      <div class="badge">Official APT Repository • v${LATEST_VERSION}</div>
-      <h1>Classic-X Menu for Trinity (TDE) <span class="version-pill">v${LATEST_VERSION}</span></h1>
-      <p class="lead">Automatic updates for Debian, Q4OS, and Ubuntu-based TDE systems.</p>
+      <span class="badge">Official APT Repository</span>
+      <h1>Classic-X Menu <span class="version-pill">v${LATEST_VERSION}</span></h1>
+      <p class="lead">
+        A modern, high-performance redesign of the classic KMenu applet with instant search, fuzzy matching, dynamic sidebar, 23 built-in profiles, and extensive visual theming for Trinity Desktop (TDE).
+      </p>
+      <div class="header-actions">
+        <a href="https://github.com/seb3773/ClassicX-tde" class="btn btn-secondary" target="_blank" rel="noopener">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          View on GitHub
+        </a>
+      </div>
     </header>
 
+    <!-- Method 1: APT Repository -->
     <div class="card">
-      <h2>🚀 Method 1: Add the APT Repository (Recommended)</h2>
-      <p style="margin-bottom: 12px; color: var(--text-muted);">
-        Add the official Classic-X repository to receive automated updates alongside your system:
+      <h2>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><path d="M4 17l6-6-6-6M12 19h8"/></svg>
+        Method 1: Add the APT Repository (Recommended)
+      </h2>
+      <p style="color: var(--text-muted); font-size: 0.95rem;">
+        Add the official repository to your system to receive regular automated updates via apt:
       </p>
-      <pre><code>echo "deb [trusted=yes] https://seb3773.github.io/ClassicX-tde/ stable main" | sudo tee /etc/apt/sources.list.d/classicx.list
+
+      <div class="code-container">
+        <pre id="aptCode">echo "deb [trusted=yes] https://seb3773.github.io/ClassicX-tde/ stable main" | sudo tee /etc/apt/sources.list.d/classicx.list
 sudo apt update
-sudo apt install tde-kicker-classicx-applet</code></pre>
-    </div>
-
-    <div class="card">
-      <h2>📦 Method 2: Direct Package Downloads (v${LATEST_VERSION})</h2>
-      <p style="color: var(--text-muted); margin-bottom: 12px;">
-        Download the standalone installer or Debian package directly:
-      </p>
-      <div class="btn-group">
-        ${LATEST_QSI_NAME:+<a class="btn btn-primary" href="${LATEST_QSI_NAME}">📥 Download Q4OS Installer v${LATEST_VERSION} (.qsi)</a>}
-        <a class="btn btn-secondary" href="pool/main/t/tde-kicker-classicx-applet/${LATEST_DEB_NAME}">📦 Download Debian Package v${LATEST_VERSION} (.deb)</a>
+sudo apt install tde-kicker-classicx-applet</pre>
+        <button class="copy-btn" onclick="copyCode('aptCode', this)">Copy</button>
       </div>
+      <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 12px;">
+        Compatible with Q4OS, Debian, Devuan, Ubuntu, Linux Mint and all Debian-based distributions.
+      </p>
     </div>
 
+    <!-- Method 2: Direct Packages -->
     <div class="card">
-      <h2>✨ Key Features</h2>
+      <h2>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        Method 2: Direct Package Download (.deb / .qsi)
+      </h2>
+      <p style="color: var(--text-muted); font-size: 0.95rem;">
+        Choose the package format best suited for your distribution:
+      </p>
+
+      <div class="downloads-grid">
+        <div class="download-card">
+          <div class="download-header">
+            <span class="download-title">Debian / TDE (.deb)</span>
+            <span class="download-tag">Recommended</span>
+          </div>
+          <p class="download-desc">Standard package for Trinity Desktop / Debian and compatible systems.</p>
+          <a href="pool/main/t/tde-kicker-classicx-applet/${LATEST_DEB_NAME}" class="btn-download">
+            Download .deb
+          </a>
+        </div>
+
+        ${LATEST_QSI_NAME:+<div class="download-card">
+          <div class="download-header">
+            <span class="download-title">Q4OS Installer (.qsi)</span>
+            <span class="download-tag">Q4OS 1-Click</span>
+          </div>
+          <p class="download-desc">Graphical one-click installer designed specifically for Q4OS Trinity desktop.</p>
+          <a href="${LATEST_QSI_NAME}" class="btn-download">
+            Download .qsi
+          </a>
+        </div>}
+      </div>
+      <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 16px;">
+        * Note: The Q4OS installer (.qsi) automatically configures the APT repository during installation for future updates.
+      </p>
+    </div>
+
+    <!-- Key Features -->
+    <div class="card">
+      <h2>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        Key Capabilities &amp; Architecture
+      </h2>
+
       <div class="features-grid">
         <div class="feature-item">
-          <h3>⚡ Instant Type-to-Search</h3>
-          <p>Start typing anywhere to filter applications instantly. Features typo-tolerant fuzzy suggestions and multilingual accent normalization.</p>
+          <span class="feature-icon">⚡</span>
+          <div class="feature-title">Instant Type-to-Search</div>
+          <div class="feature-text">Start typing anywhere to filter applications in real-time. Features typo-tolerant fuzzy suggestions and diacritics normalization.</div>
         </div>
+
         <div class="feature-item">
-          <h3>🎨 23 Built-in Profiles</h3>
-          <p>Instant visual transformations embedded as ultra-compact bytecode (&lt; 3.7 KB). Custom palettes, transparency, and font support.</p>
+          <span class="feature-icon">🎨</span>
+          <div class="feature-title">23 Built-in Profiles</div>
+          <div class="feature-text">Instant visual transformations encoded in ultra-compact zero-relocation binary format (&lt; 3.7 KB memory footprint).</div>
         </div>
+
         <div class="feature-item">
-          <h3>🖼️ 3-Part Header Banner</h3>
-          <p>Composite Left/Center/Right graphics with live overlays: User Name, Custom text, Free RAM probe (GB), Date, and Time (HH:MM).</p>
+          <span class="feature-icon">🖼️</span>
+          <div class="feature-title">3-Part Header Banner</div>
+          <div class="feature-text">Composite graphics with live dynamic overlays: User Name, Custom text, Free RAM probe, Date, and Time.</div>
         </div>
+
         <div class="feature-item">
-          <h3>📌 Quick-Access Sidebar</h3>
-          <p>Quick access to User, Shutdown, Documents, Pictures, Downloads, and Settings with configurable width and hover-triggered submenus.</p>
+          <span class="feature-icon">📌</span>
+          <div class="feature-title">Quick-Access Sidebar</div>
+          <div class="feature-text">Dedicated buttons for User, Shutdown, Documents, Pictures, Downloads, and Settings with hover submenus.</div>
         </div>
+
         <div class="feature-item">
-          <h3>🎬 Smooth Opening Animation</h3>
-          <p>Fluid, tear-free window sliding animation with sub-millisecond geometry calculation adapting to panel position and screen edges.</p>
+          <span class="feature-icon">🎬</span>
+          <div class="feature-title">Smooth Opening Animation</div>
+          <div class="feature-text">Fluid, tear-free window sliding animation with sub-millisecond geometry calculation adapting to panel position.</div>
         </div>
+
         <div class="feature-item">
-          <h3>🚀 Zero-Lag C++ Architecture</h3>
-          <p>Standalone Kicker applet plugin with L1-cache optimized algorithms, sub-microsecond kernel probes, and zero external runtime dependencies.</p>
+          <span class="feature-icon">🚀</span>
+          <div class="feature-title">Zero-Lag C++ Architecture</div>
+          <div class="feature-text">Standalone Kicker applet plugin with L1-cache optimized algorithms, sub-microsecond kernel probes, and zero overhead.</div>
         </div>
       </div>
     </div>
 
+    <!-- Screenshots -->
+    <div class="card">
+      <h2>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        Screenshots
+      </h2>
+      <div class="screenshots-grid">
+        <div class="screenshot-thumb" onclick="openModal('screenshots/ksnapshotEntCrj.png')">
+          <img src="screenshots/ksnapshotEntCrj.png" alt="Classic-X AlienX Dark Theme">
+        </div>
+        <div class="screenshot-thumb" onclick="openModal('screenshots/ksnapshotw7NiVO.png')">
+          <img src="screenshots/ksnapshotw7NiVO.png" alt="Classic-X Centered Modern Theme">
+        </div>
+        <div class="screenshot-thumb" onclick="openModal('screenshots/ksnapshot43I6hS.png')">
+          <img src="screenshots/ksnapshot43I6hS.png" alt="Classic-X WinX Theme">
+        </div>
+        <div class="screenshot-thumb" onclick="openModal('screenshots/ksnapshotOXWlfJ.png')">
+          <img src="screenshots/ksnapshotOXWlfJ.png" alt="Instant Type-to-Search">
+        </div>
+        <div class="screenshot-thumb" onclick="openModal('screenshots/ksnapshotTdZxt6.png')">
+          <img src="screenshots/ksnapshotTdZxt6.png" alt="Top Header Picture and Overlays">
+        </div>
+        <div class="screenshot-thumb" onclick="openModal('screenshots/ksnapshotwehOuH.png')">
+          <img src="screenshots/ksnapshotwehOuH.png" alt="Sidebar Pattern and User Avatar">
+        </div>
+        <div class="screenshot-thumb" onclick="openModal('screenshots/ksnapshotKd1Ksi.png')">
+          <img src="screenshots/ksnapshotKd1Ksi.png" alt="Commodore C64 Retro Theme">
+        </div>
+        <div class="screenshot-thumb" onclick="openModal('screenshots/settings_panel.jpg')">
+          <img src="screenshots/settings_panel.jpg" alt="Configuration Panel">
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
     <footer>
-      <p>Source Code &amp; Releases: <a href="https://github.com/seb3773/ClassicX-tde" target="_blank">github.com/seb3773/ClassicX-tde</a></p>
+      <p>Source Code &amp; Releases: <a href="https://github.com/seb3773/ClassicX-tde" target="_blank" rel="noopener">github.com/seb3773/ClassicX-tde</a></p>
       <p style="margin-top: 6px;">Developed with ❤️ for the Trinity Desktop Environment community.</p>
+      <p class="footer-links">
+        <a href="http://trinitydesktop.org/" target="_blank" rel="noopener">http://trinitydesktop.org/</a> &bull; 
+        <a href="https://www.q4os.org/" target="_blank" rel="noopener">https://www.q4os.org/</a> &bull; 
+        <a href="https://www.q4os.org/forum/index.php" target="_blank" rel="noopener">https://www.q4os.org/forum/index.php</a>
+      </p>
     </footer>
+
   </div>
+
+  <!-- Lightbox Modal -->
+  <div id="imageModal" class="modal" onclick="closeModal()">
+    <span class="modal-close">&times;</span>
+    <img id="modalImg" src="" alt="Enlarged screenshot" onclick="event.stopPropagation()">
+  </div>
+
+  <script>
+    function copyCode(id, btn) {
+      const text = document.getElementById(id).innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        const orig = btn.innerText;
+        btn.innerText = "Copied!";
+        setTimeout(() => btn.innerText = orig, 2000);
+      });
+    }
+
+    function openModal(src) {
+      document.getElementById('modalImg').src = src;
+      document.getElementById('imageModal').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('imageModal').classList.remove('active');
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeModal();
+    });
+  </script>
 </body>
 </html>
 EOF
@@ -357,7 +717,7 @@ EOF
 # Git commit and push to gh-pages
 echo "Committing and pushing to gh-pages branch..."
 git add -A
-git commit -m "Update APT repository and packages: $(date +'%Y-%m-%d %H:%M:%S')" || echo "No changes to commit."
+git commit -m "Update APT repository and redesign landing page: $(date +'%Y-%m-%d %H:%M:%S')" || echo "No changes to commit."
 git push origin gh-pages
 
 echo "Cleaning up temporary directory..."
