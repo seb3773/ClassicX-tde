@@ -1,24 +1,24 @@
 Architectures: amd64
 Codename: stable
 Components: main
-Date: Thu, 27 Aug 2026 00:27:16 +0000
+Date: Thu, 27 Aug 2026 00:33:12 +0000
 Description: APT Repository for Classic-X Trinity Desktop (TDE) Applet
 Label: Classic-X TDE Repository
 Origin: ClassicX
 Suite: stable
 MD5Sum:
- 6e0d1fe3dcf39b454368c4841e9d7a59              227 Release
+ 50ff98ddcb2d4966fb9adc501dca2b02              227 Release
  5afb7d5405cac9e230b6554d2a94cfeb             2109 main/binary-amd64/Packages
- c494d729de0c6149f7d2c90dbe6f6b38              707 main/binary-amd64/Packages.gz
+ 8caeb686bf7fb8022d616905a8d7eb5b              707 main/binary-amd64/Packages.gz
 SHA1:
- b874edb570a16edacb693abbb4e2c435f1b3ce27              227 Release
+ 1411358a4cef936eaacbfe4bb1b4a2c7537da6d2              227 Release
  23b32c591bf6520448309c8eba98c2ae5b425ed9             2109 main/binary-amd64/Packages
- 89b90bad9b15a16c77fdbe493201184360cba8fe              707 main/binary-amd64/Packages.gz
+ 1ad459b9b7d0f25e7306cdc6847d071e36406ed0              707 main/binary-amd64/Packages.gz
 SHA256:
- 8ff91e555c57968822c4b7eb155dcdc85a1f6bab4f136f5b7367ee267de7c39f              227 Release
+ 131283446f0541bfb8376e9b55bced0d979bf1a6e701a86ba735d553aacd973b              227 Release
  3965a6cef6fe140ccc76009972f33905b62d907cc784a6ce3ea9937b1aef4c96             2109 main/binary-amd64/Packages
- cf7e36b876466749e1afec8d6654d42c75cd1663b7f81e50ba63a3f7d1ec542b              707 main/binary-amd64/Packages.gz
+ 1982ec17c39316c521138e7184484713f7a3545753150d9bb601434c2bcda275              707 main/binary-amd64/Packages.gz
 SHA512:
- cdd153d3c39d13614261f90fda7fcb62753643b513aec9c4e0a9bc89bde0c7cc927b287ef626c14e8a4a5e303c6821b58ba4b241e141b0bb3606b36717c2a876              227 Release
+ c4869bba36ec0c32a5cb1755d3a4253d8429d443463812c68f56900007b63d88e73bf03ed66cc29651a802a530766012a7d85b843229b814201d7405daa3a632              227 Release
  aef830a521e6dfa2c23643a5787fa388dc3428107dafefeb1f647a68c454889ed9aaf9ec6973b057405de36298215c158c52913f3cf8abaa9e09bd2bfe2b6d44             2109 main/binary-amd64/Packages
- 4e04122602a8d76d7beedf5a2f0e06f25879dd16bca0660d851228067976b6dfc85952ebb00781e45b66c25b865ff52a7f5fe5b143f7bcc4fac44f1522650733              707 main/binary-amd64/Packages.gz
+ 779120279f7f16561a6c9ba0c03f990d97e43b17910a391b3253ed6acce9879e3fb6178fd195d11f0fe2326068115a79cb94f9ca1a66cb45a74b03f3b99252fd              707 main/binary-amd64/Packages.gz
