@@ -64,7 +64,7 @@ def main():
         if not os.path.isdir(d):
             continue
         for f in sorted(os.listdir(d)):
-            if f.endswith(".png") or f.endswith(".svg") or f.endswith(".svgz"):
+            if f.endswith(".png"):
                 full_path = os.path.join(d, f)
                 parent_dir = os.path.basename(d)
                 stem = os.path.splitext(f)[0]

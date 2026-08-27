@@ -291,22 +291,19 @@ TQt3 `TQPopupMenu` and `TQIconSet` have specific internal constraints that must 
    * A 150-byte baseline defines defaults; each profile encodes only differential keys (3-byte RGB colors, 1-2 byte scalars, inline UTF-8).
    * Inactive options are pruned during build, keeping the entire 23-profile database under **3.7 KB in memory**.
 7. **Single-Stream Zlib Asset Pipeline with Chunk Stripping**:
-   * 172 embedded PNG/SVG assets are processed by `convert_images.py` to strip non-critical metadata chunks (`tEXt`, `iCCP`, `pHYs`, `bKGD`, `sRGB`).
+   * 172 embedded PNG assets are processed by `convert_images.py` to strip non-critical metadata chunks (`tEXt`, `iCCP`, `pHYs`, `bKGD`, `sRGB`).
    * All assets are concatenated and compressed into a single zlib Deflate stream (Level 9), reducing raw embedded asset size to **~81.5 KB** in `.rodata`.
    * Lazy decompression decompresses the single block in **~0.2 ms** upon first access, caching the pointer for instant random access by all UI components without per-icon decode overhead.
 8. **Polymorphic Menu Separators & Harmonious Color Blending**:
    * Overcomes TQt3's non-virtual `TQPopupMenu::drawItem` constraint by implementing `ClassicXMenuSeparator` via `TQCustomMenuItem` whose `virtual void paint(...)` is invoked polymorphically by the Qt rendering engine.
    * The separator color is precalculated at palette load ($35\% \times \text{Foreground} + 65\% \times \text{Background}$) and cached in `s_cachedSeparatorColor` in `global.cpp`, guaranteeing zero arithmetic cost during painting.
-9. **Automated Build-Time Version Injection**:
-   * Build scripts (`create_applet_deb.sh`, `create_applet_qsi.sh`) automatically generate `classicx_version.h` from the target package version.
-   * `ClassicXSettingsDialog::onAboutClicked()` consumes this macro directly, ensuring the About dialog is permanently in sync with the released package.
-10. **Selective Granular `-Os` Compilation**:
-    * The settings dialog (`classicx_settings_dialog.cpp`) and profile loader (`classicx_profile.cpp`) are compiled with `-Os` (`#pragma GCC optimize ("Os")` + CMake `COMPILE_FLAGS "-Os"`), reducing binary size by ~16 KB while keeping core search and indexing engines at `-O2 -flto=auto` performance.
-11. **Tear-Free Menu Opening Animation Engine**:
+9. **Selective Granular `-Os` Compilation**:
+   * The settings dialog (`classicx_settings_dialog.cpp`) and profile loader (`classicx_profile.cpp`) are compiled with `-Os` (`#pragma GCC optimize ("Os")` + CMake `COMPILE_FLAGS "-Os"`), reducing binary size by ~16 KB while keeping core search and indexing engines at `-O2 -flto=auto` performance.
+10. **Tear-Free Menu Opening Animation Engine**:
     * When `AnimateOpening` is enabled, the menu uses an interpolation state machine driven by a low-overhead timer loop (`animateStep()`) operating across a ~90ms envelope.
     * Geometric steps calculate window position and height/width expansion incrementally relative to panel edge orientation (Bottom, Top, Left, Right).
     * Geometry is clamped to single-buffer target bounds without secondary resize events or multiple repaint cycles, preventing X11 compositor tearing, artifacts, and input stalling.
-12. **Sub-Microsecond Free RAM Kernel Probe**:
+11. **Sub-Microsecond Free RAM Kernel Probe**:
     * System memory availability for the dynamic top header overlay is extracted via direct linear reading of `/proc/meminfo` (`MemAvailable` / `MemFree`) using native POSIX system calls (`open(..., O_RDONLY)` / `read()` / `close()`).
     * Takes **~2 microseconds** ($0.000002$s), eliminating shell forks, helper subprocesses (`free`, `awk`, `vmstat`), and background polling daemons.
 
