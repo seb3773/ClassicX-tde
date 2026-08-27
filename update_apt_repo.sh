@@ -94,6 +94,9 @@ fi
 if [ -f "$REPO_DIR/CX.png" ]; then
     cp -a "$REPO_DIR/CX.png" "$PAGES_DIR/"
 fi
+if [ -f "$REPO_DIR/CX_fav.png" ]; then
+    cp -a "$REPO_DIR/CX_fav.png" "$PAGES_DIR/"
+fi
 
 # Create .nojekyll to prevent GitHub Pages Jekyll processing
 touch "$PAGES_DIR/.nojekyll"
@@ -117,7 +120,7 @@ cat << EOF > "$PAGES_DIR/index.html"
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Classic-X TDE v${LATEST_VERSION} - APT Repository</title>
-  <link rel="icon" type="image/png" href="CX.png">
+  <link rel="icon" type="image/png" href="CX_fav.png">
   <style>
     :root {
       --bg: #12141a;
