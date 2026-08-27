@@ -37,9 +37,7 @@ Classic-X combines the lightning-fast responsiveness of classic TDE Kmenu with m
 * **Expanded Start & UI Icon Suites**: Broad collection of embedded start icons (*WinBlack, Classic, Modern, Tux, Debian, Commodore, Atari, Apple, Q4OS...*) plus 2 new full UI icon theme suites (*ui_alt*, *ui_alt2*, including dedicated Downloads chrome icons).
 * **Dynamic 3-Part Header Banner & Multi-Element Text Overlay**: 3-part header images (Left/Center/Right) with customizable themes, color filters (Invert/Colorize), flexible horizontal text alignment (**Center**, **Left**, **Right**), and dynamic overlays: **User Name**, **Custom Text**, **Free RAM (GB)**, **Localized Date**, and **Localized Time (HH:MM)**.
 * **23 Built-in Preset Profiles**: Instant visual transformations (e.g. *2001*, *A520ST*, *AlienX*, *BlackMac*, *C64*, *Centered*, *CenteredBlack*, *DebianDevil*, *Doomed*, *Dream*, *GoldFlower*, *GreenWin*, *Japan*, *Q4OSaqua*, *Q4OSmodern*, *RocketScience*, *System7*, *ThinBlack*, *Trinity*, *WinX*, *WintNT2K*, *Woody*, *X11minimal*) embedded as ultra-compact zero-relocation bytecode (< 3.7 KB memory footprint).
-* **Single-Stream Zlib Asset Pipeline**: 172 icons, patterns, and graphics compressed into a single continuous zlib Deflate stream with ancillary chunk stripping, lazy-decompressed in ~0.2ms upon first access.
 * **Deep "Show in Tree" Navigation**: Right-click any search hit to instantly restore the full application category tree and highlight that specific program inside its folder.
-* **Dynamic Build Version Injection**: Package version passed during build is automatically compiled and displayed cleanly under the title in the About dialog.
 * **Standalone Plugin**: Zero modifications required to the system `kicker` binary or `tdebase` packages.
 
 ---
