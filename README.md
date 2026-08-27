@@ -2,7 +2,7 @@
 
 A modern, high-performance redesign of the Trinity Desktop Environment (TDE) Classic Menu (KMenu), built as a **standalone Kicker panel applet plugin** (`classicxapplet.so`).
 
-Classic-X combines the lightning-fast responsiveness of classic TDE Kmenu with modern UX features: **Windows 10-style instant search filtering**, **typo-tolerant fuzzy suggestions**, **an interactive quick-access sidebar**, **extensive visual theming (custom banners, 3-part header pictures, dynamic text overlays)**, and **several built-in preset profiles**.
+Classic-X combines the lightning-fast responsiveness of classic TDE Kmenu with modern UX features: **Windows 10-style instant search filtering**, **typo-tolerant fuzzy suggestions**, **an interactive quick-access sidebar**, **extensive visual theming (custom banners, 3-part header pictures, dynamic text overlays)**, and **23 built-in preset profiles**.
 
 ---
 
@@ -11,10 +11,10 @@ Classic-X combines the lightning-fast responsiveness of classic TDE Kmenu with m
 2. [Interactive Navigation & Search Guide (Keyboard & Mouse UX)](#interactive-navigation--search-guide-keyboard--mouse-ux)
 3. [Settings & Customization Reference](#settings--customization-reference)
    - [Built-in & User Profiles](#1-built-in--user-profiles)
-   - [General Settings, Layout & Opening Animation](#2-general-settings-layout--opening-animation)
+   - [General Settings, Layout, Centering & Animation](#2-general-settings-layout-centering--animation)
    - [Colors, Transparency & Typography](#3-colors-transparency--typography)
    - [Interactive Sidebar, User Picture & Power Management](#4-interactive-sidebar-user-picture--power-management)
-   - [Start Icon, User Avatar & UI Icons Customization](#5-start-icon-user-avatar--ui-icons-customization)
+   - [Start Icon, User Avatar & UI Icon Suites](#5-start-icon-user-avatar--ui-icon-suites)
    - [Sidebar Picture & Tiled Pattern Themes](#6-sidebar-picture--tiled-pattern-themes)
    - [Top Header Picture, Alignment & Dynamic Text Overlay](#7-top-header-picture-alignment--dynamic-text-overlay)
 4. [Build, Packaging & Installation](#build-packaging--installation)
@@ -28,13 +28,18 @@ Classic-X combines the lightning-fast responsiveness of classic TDE Kmenu with m
 * **Instant Type-to-Search**: Start typing any alphanumeric key as soon as the menu opens to immediately enter search mode — no dedicated search bar click required.
 * **Smart Fuzzy Search & Accent Normalization**: Handles typos, omissions, and transpositions via an L1-cache optimized Damerau-Levenshtein engine. Automatically normalizes multilingual diacritics (`é`, `è`, `ê`, `à`, `î`, `ö`, `ç` $\rightarrow$ `e`, `a`, `i`, `o`, `c`).
 * **Recent-Prioritized Ranking**: Search results matching applications in your recent launch history (`kickerrc`) are automatically promoted to top positions.
+* **Horizontal Centered Menu Mode**: Option to open and anchor the menu popup centered horizontally relative to the panel button / screen edge, providing a sleek modern dock-style presentation.
+* **Customizable Minimum Menu Width**: Set an optional minimum width in pixels (e.g. 500px to 900px) ensuring a spacious, comfortable layout across all screen resolutions and wide banner themes.
 * **Smooth Opening Animation**: Optional tear-free sliding window animation calculated dynamically relative to panel orientation and screen edges.
 * **Modern Quick-Access Sidebar**: Dedicated interactive buttons for **User / Session**, **Documents**, **Pictures**, **Downloads**, **Settings**, and **Log Out** with optional hover-triggered submenus.
-* **Harmonious Menu Separators**: Subtle separator lines automatically blended (35% Foreground + 65% Background) for natural contrast across dark, light, and tinted themes with zero runtime overhead.
+* **Harmonious Menu Separators**: Subtle separator lines automatically blended (35% Foreground + 65% Background) for natural contrast across dark, light, and custom themes with zero runtime overhead.
 * **User Picture with Live Preview**: Support for native TDE user avatar (`~/.face`), 18 embedded pixel portraits, or custom images, featuring live preview, color inversion, and color tinting.
-* **Dynamic 3-Part Header Banner & Multi-Element Text Overlay**: 3-part header images (Left/Center/Right) with customizable themes, color filters (Invert/Colorize), horizontal text alignment (Center/Left/Right), and dynamic overlays: **User Name**, **Custom Text**, **Free RAM (GB)**, **Localized Date**, and **Localized Time (HH:MM)**.
+* **Expanded Start & UI Icon Suites**: Broad collection of embedded start icons (*WinBlack, Classic, Modern, Tux, Debian, Commodore, Atari, Apple, Q4OS...*) plus 2 new full UI icon theme suites (*ui_alt*, *ui_alt2*, including dedicated Downloads chrome icons).
+* **Dynamic 3-Part Header Banner & Multi-Element Text Overlay**: 3-part header images (Left/Center/Right) with customizable themes, color filters (Invert/Colorize), flexible horizontal text alignment (**Center**, **Left**, **Right**), and dynamic overlays: **User Name**, **Custom Text**, **Free RAM (GB)**, **Localized Date**, and **Localized Time (HH:MM)**.
 * **23 Built-in Preset Profiles**: Instant visual transformations (e.g. *2001*, *A520ST*, *AlienX*, *BlackMac*, *C64*, *Centered*, *CenteredBlack*, *DebianDevil*, *Doomed*, *Dream*, *GoldFlower*, *GreenWin*, *Japan*, *Q4OSaqua*, *Q4OSmodern*, *RocketScience*, *System7*, *ThinBlack*, *Trinity*, *WinX*, *WintNT2K*, *Woody*, *X11minimal*) embedded as ultra-compact zero-relocation bytecode (< 3.7 KB memory footprint).
+* **Single-Stream Zlib Asset Pipeline**: 172 icons, patterns, and graphics compressed into a single continuous zlib Deflate stream with ancillary chunk stripping, lazy-decompressed in ~0.2ms upon first access.
 * **Deep "Show in Tree" Navigation**: Right-click any search hit to instantly restore the full application category tree and highlight that specific program inside its folder.
+* **Dynamic Build Version Injection**: Package version passed during build is automatically compiled and displayed cleanly under the title in the About dialog.
 * **Standalone Plugin**: Zero modifications required to the system `kicker` binary or `tdebase` packages.
 
 ---
@@ -90,10 +95,10 @@ Access the settings dialog by right-clicking the applet handle or menu button an
 * **Preset Profiles Selector**: Switch between 23 crafted built-in profiles (*2001*, *A520ST*, *AlienX*, *BlackMac*, *C64*, *Centered*, *CenteredBlack*, *DebianDevil*, *Doomed*, *Dream*, *GoldFlower*, *GreenWin*, *Japan*, *Q4OSaqua*, *Q4OSmodern*, *RocketScience*, *System7*, *ThinBlack*, *Trinity*, *WinX*, *WintNT2K*, *Woody*, *X11minimal*).
 * **Custom Profiles**: Save your current layout, colors, icons, and picture configuration under a custom name, or delete obsolete user profiles saved in `~/.trinity/share/apps/classicxapplet/profiles/`.
 
-### 2. General Settings, Layout & Opening Animation
+### 2. General Settings, Layout, Centering & Animation
+* **Center Menu Horizontally**: Center the popup window horizontally along the bottom panel/screen edge relative to the Start button instead of corner-docking.
+* **Menu Minimum Width**: Set an explicit minimum width in pixels (e.g. 500px, 700px, 850px) to guarantee a wide, balanced layout across high-resolution displays.
 * **Smooth Menu Opening Animation**: Enable fluid, tear-free window sliding animation when the menu opens, automatically adapting to top, bottom, left, or right panel positions.
-* **Menu Minimum Width**: Set an optional minimum width (in pixels) to preserve balanced visual proportions with long banner titles or wide submenus.
-* **Center Menu on Button**: Option to center the menu popup relative to the Kicker panel button rather than aligning to its edge.
 * **Always Show Search Bar**: Choose between a permanently visible search input field (on-demand type-to-search is always activated independently of this choice).
 * **Menu Entry Format**: Choose how applications are named across the menu:
   * *Name only* (e.g., `Konqueror`)
@@ -133,9 +138,9 @@ Access the settings dialog by right-clicking the applet handle or menu button an
 * **Submenu Height Mode**: Choose between **Full Menu Height** (submenus expand to match main menu height perfectly, adapting seamlessly when Top Pictures are active) or **Custom Height** (150px to 600px).
 * **Power Management Actions**: Toggle individual power actions (**Power Off**, **Reboot**, **Suspend**, **Hybrid Suspend**, **Hibernate**) with automatic backend detection (ConsoleKit, systemd-logind, UPower, TDE PowerManager).
 
-### 5. Start Icon, User Avatar & UI Icons Customization
+### 5. Start Icon, User Avatar & UI Icon Suites
 * **Start Menu Button**:
-  * *Source*: Embedded presets (*Classic, Modern, WinBlue, Tux, Debian, Commodore, Apple, Atari, Q4OS...*), TDE System Icon, or Custom file path.
+  * *Source*: Embedded presets (*Classic, Modern, WinBlack, WinBlue, Tux, Debian, Commodore, Apple, Atari, Q4OS...*), TDE System Icon, or Custom file path.
   * *Live Preview*: Integrated preview widget reflecting icon choice, colorization, color inversion, and exact button proportions.
   * *Rendering*: **Full-scale** (expands icon to fill panel button dimensions with live preview feedback), **Invert colors**, and **Colorize tint** with custom color picker.
 * **User Profile Picture**:
@@ -144,7 +149,7 @@ Access the settings dialog by right-clicking the applet handle or menu button an
   * *Filters*: **Invert colors** and **Colorize tint** with dedicated color picker.
 * **UI Icons (Sidebar & Submenu Chrome)**:
   * *Size*: 16px, 22px, 24px, 28px, 32px, 36px, 48px.
-  * *Source Customization*: Assign individual icon sources or apply batch presets across all UI categories (Settings, Documents, Pictures, Downloads, User, Shutdown, Power Off, Reboot, Suspend, Hibernate).
+  * *Icon Theme Suites*: Choose between Default, TDE System, and 2 complete modern alternative sets (*ui_alt*, *ui_alt2*), including dedicated modern icons for **Downloads**, **Documents**, **Pictures**, **Settings**, **User**, **Shutdown**, **Power Off**, **Reboot**, **Suspend**, **Hibernate**, and **Hybrid Sleep**.
   * *Filters*: **Invert colors** and **Colorize tint**.
 
 ### 6. Sidebar Picture & Tiled Pattern Themes
@@ -159,6 +164,7 @@ Access the settings dialog by right-clicking the applet handle or menu button an
 ### 7. Top Header Picture, Alignment & Dynamic Text Overlay
 * **3-Part Header Banner**: Embed Left / Center (tiled) / Right composite banners (*Royal, Slate, Ocean, Minimal, Classic...*) or custom image files.
 * **Banner Filters**: **Invert colors** and **Colorize tint** with custom highlight color.
+* **Horizontal Text Alignment**: Align overlay text to **Center**, **Left**, or **Right** inside the header picture banner.
 * **Dynamic Multi-Element Text Overlay**:
   * Combine any combination of:
     * **User Name**: Full user name or login name via `KUser`.
@@ -167,7 +173,6 @@ Access the settings dialog by right-clicking the applet handle or menu button an
     * **Date of the day**: Localized date format.
     * **Time (HH:MM)**: Localized hour and minute without distracting seconds.
   * Automatically formatted with clean `" - "` separators.
-* **Text Alignment**: Horizontal alignment selection (**Center**, **Left**, **Right**) with vertical centering.
 * **Text Color Modes**: *TDE Default*, *Title Text Color*, or *Custom Color*.
 
 ---

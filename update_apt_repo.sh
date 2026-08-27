@@ -100,6 +100,11 @@ touch "$PAGES_DIR/.nojekyll"
 
 # Find latest file names for HTML download buttons
 LATEST_DEB_NAME=$(basename "${DEB_FILES[0]}")
+LATEST_VERSION=$(echo "$LATEST_DEB_NAME" | sed -n 's/.*classicx-applet_\([^_]*\)_.*/\1/p')
+if [ -z "$LATEST_VERSION" ]; then
+    LATEST_VERSION="1.0.4"
+fi
+
 LATEST_QSI_NAME=""
 if [ ${#QSI_FILES[@]} -gt 0 ]; then
     LATEST_QSI_NAME=$(basename "${QSI_FILES[0]}")
@@ -111,7 +116,7 @@ cat << EOF > "$PAGES_DIR/index.html"
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Classic-X TDE - APT Repository</title>
+  <title>Classic-X TDE v${LATEST_VERSION} - APT Repository</title>
   <link rel="icon" type="image/png" href="CX.png">
   <style>
     :root {
@@ -162,6 +167,18 @@ cat << EOF > "$PAGES_DIR/index.html"
       margin-bottom: 12px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
+    }
+    .version-pill {
+      display: inline-block;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      padding: 2px 12px;
+      border-radius: 20px;
+      vertical-align: middle;
+      margin-left: 8px;
     }
     h1 {
       font-size: 2.2rem;
@@ -269,8 +286,8 @@ cat << EOF > "$PAGES_DIR/index.html"
     <header>
       <img src="about.png" alt="Classic-X Logo" class="logo">
       <br>
-      <div class="badge">Official APT Repository</div>
-      <h1>Classic-X Menu for Trinity (TDE)</h1>
+      <div class="badge">Official APT Repository • v${LATEST_VERSION}</div>
+      <h1>Classic-X Menu for Trinity (TDE) <span class="version-pill">v${LATEST_VERSION}</span></h1>
       <p class="lead">Automatic updates for Debian, Q4OS, and Ubuntu-based TDE systems.</p>
     </header>
 
@@ -285,13 +302,13 @@ sudo apt install tde-kicker-classicx-applet</code></pre>
     </div>
 
     <div class="card">
-      <h2>📦 Method 2: Direct Package Downloads</h2>
+      <h2>📦 Method 2: Direct Package Downloads (v${LATEST_VERSION})</h2>
       <p style="color: var(--text-muted); margin-bottom: 12px;">
         Download the standalone installer or Debian package directly:
       </p>
       <div class="btn-group">
-        ${LATEST_QSI_NAME:+<a class="btn btn-primary" href="${LATEST_QSI_NAME}">📥 Download Q4OS Installer (.qsi)</a>}
-        <a class="btn btn-secondary" href="pool/main/t/tde-kicker-classicx-applet/${LATEST_DEB_NAME}">📦 Download Debian Package (.deb)</a>
+        ${LATEST_QSI_NAME:+<a class="btn btn-primary" href="${LATEST_QSI_NAME}">📥 Download Q4OS Installer v${LATEST_VERSION} (.qsi)</a>}
+        <a class="btn btn-secondary" href="pool/main/t/tde-kicker-classicx-applet/${LATEST_DEB_NAME}">📦 Download Debian Package v${LATEST_VERSION} (.deb)</a>
       </div>
     </div>
 
