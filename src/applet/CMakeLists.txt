@@ -105,7 +105,7 @@ endif()
 
 tde_add_kpart( ${target} AUTOMOC
   SOURCES ${${target}_SRCS}
-  LINK tdehw-shared tdecore-shared tdeui-shared tdeio-shared Xau ${KICKERMAIN_LIBRARY}
+  LINK tdehw-shared tdecore-shared tdeui-shared tdeio-shared Xau z ${KICKERMAIN_LIBRARY}
   DESTINATION ${PLUGIN_INSTALL_DIR}
 )
 

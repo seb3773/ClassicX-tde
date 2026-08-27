@@ -29,10 +29,11 @@ Classic-X combines the lightning-fast responsiveness of classic TDE Kmenu with m
 * **Smart Fuzzy Search & Accent Normalization**: Handles typos, omissions, and transpositions via an L1-cache optimized Damerau-Levenshtein engine. Automatically normalizes multilingual diacritics (`é`, `è`, `ê`, `à`, `î`, `ö`, `ç` $\rightarrow$ `e`, `a`, `i`, `o`, `c`).
 * **Recent-Prioritized Ranking**: Search results matching applications in your recent launch history (`kickerrc`) are automatically promoted to top positions.
 * **Smooth Opening Animation**: Optional tear-free sliding window animation calculated dynamically relative to panel orientation and screen edges.
-* **Modern Quick-Access Sidebar**: Dedicated interactive buttons for **User / Session**, **Documents**, **Pictures**, **Settings**, and **Log Out** with optional hover-triggered submenus.
-* **User Picture with Live Preview**: Support for native TDE user avatar, 18 embedded pixel portraits, or custom images, featuring live preview, color inversion, and color tinting.
-* **Dynamic 3-Part Header Banner & Multi-Element Text Overlay**: 3-part header images (Left/Center/Right) with customizable themes, color filters (Invert/Colorize), text alignment (Center/Left/Right), and dynamic overlays: **User Name**, **Custom Text**, **Free RAM (GB)**, **Localized Date**, and **Localized Time (HH:MM)**.
-* **20 Built-in Preset Profiles**: Instant visual transformations (e.g. *2001*, *AlienX*, *BlackMac*, *C64*, *DebianDevil*, *Q4OSmodern*, *Trinity*, *WinX*) embedded as ultra-compact zero-relocation bytecode (< 3.0 KB memory footprint).
+* **Modern Quick-Access Sidebar**: Dedicated interactive buttons for **User / Session**, **Documents**, **Pictures**, **Downloads**, **Settings**, and **Log Out** with optional hover-triggered submenus.
+* **Harmonious Menu Separators**: Subtle separator lines automatically blended (35% Foreground + 65% Background) for natural contrast across dark, light, and tinted themes with zero runtime overhead.
+* **User Picture with Live Preview**: Support for native TDE user avatar (`~/.face`), 18 embedded pixel portraits, or custom images, featuring live preview, color inversion, and color tinting.
+* **Dynamic 3-Part Header Banner & Multi-Element Text Overlay**: 3-part header images (Left/Center/Right) with customizable themes, color filters (Invert/Colorize), horizontal text alignment (Center/Left/Right), and dynamic overlays: **User Name**, **Custom Text**, **Free RAM (GB)**, **Localized Date**, and **Localized Time (HH:MM)**.
+* **23 Built-in Preset Profiles**: Instant visual transformations (e.g. *2001*, *A520ST*, *AlienX*, *BlackMac*, *C64*, *Centered*, *CenteredBlack*, *DebianDevil*, *Doomed*, *Dream*, *GoldFlower*, *GreenWin*, *Japan*, *Q4OSaqua*, *Q4OSmodern*, *RocketScience*, *System7*, *ThinBlack*, *Trinity*, *WinX*, *WintNT2K*, *Woody*, *X11minimal*) embedded as ultra-compact zero-relocation bytecode (< 3.7 KB memory footprint).
 * **Deep "Show in Tree" Navigation**: Right-click any search hit to instantly restore the full application category tree and highlight that specific program inside its folder.
 * **Standalone Plugin**: Zero modifications required to the system `kicker` binary or `tdebase` packages.
 
@@ -86,7 +87,7 @@ Classic-X provides a fluid, friction-free keyboard and mouse workflow:
 Access the settings dialog by right-clicking the applet handle or menu button and selecting **Menu Settings**.
 
 ### 1. Built-in & User Profiles
-* **Preset Profiles Selector**: Switch between 20 crafted built-in profiles (*2001*, *A520ST*, *AlienX*, *BlackMac*, *BlueWork*, *C64*, *DebianDevil*, *GoldFlower*, *GreenWin*, *Japan*, *Q4OSaqua*, *Q4OSmodern*, *RocketScience*, *System7*, *ThinBlack*, *Trinity*, *WinX*, *WintNT2K*, *Woody*, *X11minimal*).
+* **Preset Profiles Selector**: Switch between 23 crafted built-in profiles (*2001*, *A520ST*, *AlienX*, *BlackMac*, *C64*, *Centered*, *CenteredBlack*, *DebianDevil*, *Doomed*, *Dream*, *GoldFlower*, *GreenWin*, *Japan*, *Q4OSaqua*, *Q4OSmodern*, *RocketScience*, *System7*, *ThinBlack*, *Trinity*, *WinX*, *WintNT2K*, *Woody*, *X11minimal*).
 * **Custom Profiles**: Save your current layout, colors, icons, and picture configuration under a custom name, or delete obsolete user profiles saved in `~/.trinity/share/apps/classicxapplet/profiles/`.
 
 ### 2. General Settings, Layout & Opening Animation
@@ -121,6 +122,7 @@ Access the settings dialog by right-clicking the applet handle or menu button an
     * **Title Banner Foreground & Background Colors**
     * **Search Text Input Color**
     * **Button Hover Highlight Color**
+* **Harmonious Tree Separators**: Automatically blends 35% Foreground + 65% Background for clean, non-intrusive section dividers in the category tree.
 * **Font Mode**: Use standard TDE System font (`TDEGlobalSettings::generalFont()`) or select a custom typography font and size via font dialog.
 
 ### 4. Interactive Sidebar, User Picture & Power Management
@@ -152,7 +154,7 @@ Access the settings dialog by right-clicking the applet handle or menu button an
   * *Width Mode*: **Stretch** (proportional scaling to sidebar width) or **Crop** (centered native resolution).
   * *Vertical Alignment*: **Align Top** or **Align Bottom** (in Picture mode).
   * *Extend Edges*: Render behind sidebar button padding for edge-to-edge aesthetics.
-* **Filters**: **Invert colors** and **Colorize tint** with custom color selection.
+* **Filters*: **Invert colors** and **Colorize tint** with custom color selection.
 
 ### 7. Top Header Picture, Alignment & Dynamic Text Overlay
 * **3-Part Header Banner**: Embed Left / Center (tiled) / Right composite banners (*Royal, Slate, Ocean, Minimal, Classic...*) or custom image files.
@@ -176,7 +178,7 @@ Classic-X can be built and distributed either as a standard Debian package (`.de
 
 ### Prerequisites
 * TDE development headers: `tdebase-trinity-dev`, `tqca-trinity-dev`, `libtqt3-mt-dev`
-* Build tools: `cmake` (>= 3.0), `g++`, `make`, `dpkg-deb`
+* Build tools: `cmake` (>= 3.0), `g++`, `make`, `dpkg-deb`, `zlib1g-dev`
 * Optional (for `.qsi` installer generation): `q4os-devpack-base`
 
 ### Building Packages
@@ -187,10 +189,11 @@ Run the debian builder script from the repository root:
 ./create_applet_deb.sh [version]
 ```
 This automated script will:
-1. Run `convert_images.py` and `convert_profiles.py` to regenerate zero-relocation embedded assets.
-2. Configure CMake with optimal C++ flags and build `classicxapplet.so`.
-3. Strip the binary aggressively (`sstrip` / `strip`).
-4. Generate the `.deb` package (`tde-kicker-classicx-applet_<version>_amd64.deb`).
+1. Generate `src/applet/classicx_version.h` containing the target version.
+2. Run `convert_images.py` (lossless PNG chunk stripping + single zlib stream compression) and `convert_profiles.py` (compact delta binary database).
+3. Configure CMake with optimal C++ flags and build `classicxapplet.so`.
+4. Strip the binary aggressively (`sstrip` / `strip`).
+5. Generate the `.deb` package (`tde-kicker-classicx-applet_<version>_amd64.deb`).
 
 #### 2. Q4OS Self-Extracting Installer (`.qsi`)
 To produce an all-in-one wizard installer for Q4OS with embedded graphics, HTML descriptions, and dependency checks:
@@ -214,6 +217,13 @@ This produces `setup_tde-kicker-classicx-applet_<version>.qsi` ready for direct 
   sudo apt install ./tde-kicker-classicx-applet_*_amd64.deb
   ```
 
+#### Method C: Official APT Repository (Automated Updates)
+```bash
+echo "deb [trusted=yes] https://seb3773.github.io/ClassicX-tde/ stable main" | sudo tee /etc/apt/sources.list.d/classicx.list
+sudo apt update
+sudo apt install tde-kicker-classicx-applet
+```
+
 #### Adding Classic-X to Kicker Panel
 1. Restart Kicker to reload plugins (if necessary):
    ```bash
@@ -229,14 +239,17 @@ This produces `setup_tde-kicker-classicx-applet_<version>.qsi` ready for direct 
 | Component / File | Purpose |
 |------------------|---------|
 | `src/applet/classicx_applet.cpp` | Applet entry point and Kicker panel button integration |
-| `src/applet/k_mnu.cpp` | Main menu class (`PanelKMenu`), search engine, result layout, tree stash / restore |
-| `src/applet/classicx_settings_dialog.cpp` | Settings dialog (`ClassicXSettingsDialog`) |
+| `src/applet/k_mnu.cpp` | Main menu class (`PanelKMenu`), search engine, result layout, tree stash / restore, custom separators |
+| `src/applet/classicx_settings_dialog.cpp` | Settings dialog (`ClassicXSettingsDialog`) and About dialog |
 | `src/applet/classicx_profile.cpp` | Profile management (unified built-in & disk profiles) |
 | `src/applet/service_mnu.cpp` | Service menu class (`PanelServiceMenu`), context menu, Show in Tree, `kickerrc` lock check |
-| `src/applet/global.cpp` | Shared helpers: `treeIconPixelSize()`, `menuIconSet()`, search pad icon cache |
+| `src/applet/global.cpp` | Shared helpers: color caching, `treeIconPixelSize()`, `menuIconSet()`, search pad icon cache |
+| `src/applet/embedded_icons.cpp` | Embedded icon provider with on-demand zlib decompression |
 | `src/applet/recentapps.cpp` | History manager (`RecentlyLaunchedApps`), `kickerrc` `RecentAppsStat` reader/writer |
 | `src/applet/classicxSettings.kcfg` | Configuration skeleton (`MenuEntryHeight`, `ShowRecentApps`, `NumRecentApps`, `SidebarHoverDelay`, etc.) |
+| `convert_images.py` | PNG chunk optimizer and zlib stream generator (`classicx_embedded_icons.h`) |
 | `convert_profiles.py` | Generator for zero-relocation binary delta profile database (`classicx_builtin_profiles.h`) |
+| `update_apt_repo.sh` | Automated APT repository and GitHub Pages publishing script |
 | `create_applet_deb.sh` | Automated build and packaging script for Debian/TDE (`.deb`) |
 | `create_applet_qsi.sh` | Automated build and packaging script for Q4OS (`.qsi`) |
 | `qsi_setup/` | Templates, HTML pages, and visuals for the Q4OS graphical wizard |
@@ -271,18 +284,28 @@ TQt3 `TQPopupMenu` and `TQIconSet` have specific internal constraints that must 
 5. **Non-Blocking Display Manager IPC**:
    * Session control (`dmctl.cpp`) uses non-blocking POSIX sockets with `fcntl(O_NONBLOCK)` and bounded `poll()` timeouts (~2000ms), preventing UI lockups if display daemons freeze.
 6. **Zero-Relocation Delta Built-in Profiles Architecture**:
-   * In 64-bit shared modules (`.so`), static struct arrays with string pointers generate hundreds of 24-byte dynamic relocations (`.rela.dyn`). Classic-X encodes all 20 built-in profiles as a contiguous byte stream (`s_profileDeltaBlob[]`), eliminating 100% of relocation overhead.
+   * In 64-bit shared modules (`.so`), static struct arrays with string pointers generate hundreds of 24-byte dynamic relocations (`.rela.dyn`). Classic-X encodes all 23 built-in profiles as a contiguous byte stream (`s_profileDeltaBlob[]`), eliminating 100% of relocation overhead.
    * A 150-byte baseline defines defaults; each profile encodes only differential keys (3-byte RGB colors, 1-2 byte scalars, inline UTF-8).
-   * Inactive options are pruned during build, keeping the entire 20-profile database under **3.0 KB in memory**.
-7. **Selective Granular `-Os` Compilation**:
-   * The settings dialog (`classicx_settings_dialog.cpp`) and profile loader (`classicx_profile.cpp`) are compiled with `-Os` (`#pragma GCC optimize ("Os")` + CMake `COMPILE_FLAGS "-Os"`), reducing binary size by ~16 KB while keeping core search and indexing engines at `-O2 -flto=auto` performance.
-8. **Tear-Free Menu Opening Animation Engine**:
-   * When `AnimateOpening` is enabled, the menu uses an interpolation state machine driven by a low-overhead timer loop (`animateStep()`) operating across a ~90ms envelope.
-   * Geometric steps calculate window position and height/width expansion incrementally relative to panel edge orientation (Bottom, Top, Left, Right).
-   * Geometry is clamped to single-buffer target bounds without secondary resize events or multiple repaint cycles, preventing X11 compositor tearing, artifacts, and input stalling.
-9. **Sub-Microsecond Free RAM Kernel Probe**:
-   * System memory availability for the dynamic top header overlay is extracted via direct linear reading of `/proc/meminfo` (`MemAvailable` / `MemFree`) using native POSIX system calls (`open(..., O_RDONLY)` / `read()` / `close()`).
-   * Takes **~2 microseconds** ($0.000002$s), eliminating shell forks, helper subprocesses (`free`, `awk`, `vmstat`), and background polling daemons. Memory readings remain fresh at each menu invocation without adding measurable latency.
+   * Inactive options are pruned during build, keeping the entire 23-profile database under **3.7 KB in memory**.
+7. **Single-Stream Zlib Asset Pipeline with Chunk Stripping**:
+   * 172 embedded PNG/SVG assets are processed by `convert_images.py` to strip non-critical metadata chunks (`tEXt`, `iCCP`, `pHYs`, `bKGD`, `sRGB`).
+   * All assets are concatenated and compressed into a single zlib Deflate stream (Level 9), reducing raw embedded asset size to **~81.5 KB** in `.rodata`.
+   * Lazy decompression decompresses the single block in **~0.2 ms** upon first access, caching the pointer for instant random access by all UI components without per-icon decode overhead.
+8. **Polymorphic Menu Separators & Harmonious Color Blending**:
+   * Overcomes TQt3's non-virtual `TQPopupMenu::drawItem` constraint by implementing `ClassicXMenuSeparator` via `TQCustomMenuItem` whose `virtual void paint(...)` is invoked polymorphically by the Qt rendering engine.
+   * The separator color is precalculated at palette load ($35\% \times \text{Foreground} + 65\% \times \text{Background}$) and cached in `s_cachedSeparatorColor` in `global.cpp`, guaranteeing zero arithmetic cost during painting.
+9. **Automated Build-Time Version Injection**:
+   * Build scripts (`create_applet_deb.sh`, `create_applet_qsi.sh`) automatically generate `classicx_version.h` from the target package version.
+   * `ClassicXSettingsDialog::onAboutClicked()` consumes this macro directly, ensuring the About dialog is permanently in sync with the released package.
+10. **Selective Granular `-Os` Compilation**:
+    * The settings dialog (`classicx_settings_dialog.cpp`) and profile loader (`classicx_profile.cpp`) are compiled with `-Os` (`#pragma GCC optimize ("Os")` + CMake `COMPILE_FLAGS "-Os"`), reducing binary size by ~16 KB while keeping core search and indexing engines at `-O2 -flto=auto` performance.
+11. **Tear-Free Menu Opening Animation Engine**:
+    * When `AnimateOpening` is enabled, the menu uses an interpolation state machine driven by a low-overhead timer loop (`animateStep()`) operating across a ~90ms envelope.
+    * Geometric steps calculate window position and height/width expansion incrementally relative to panel edge orientation (Bottom, Top, Left, Right).
+    * Geometry is clamped to single-buffer target bounds without secondary resize events or multiple repaint cycles, preventing X11 compositor tearing, artifacts, and input stalling.
+12. **Sub-Microsecond Free RAM Kernel Probe**:
+    * System memory availability for the dynamic top header overlay is extracted via direct linear reading of `/proc/meminfo` (`MemAvailable` / `MemFree`) using native POSIX system calls (`open(..., O_RDONLY)` / `read()` / `close()`).
+    * Takes **~2 microseconds** ($0.000002$s), eliminating shell forks, helper subprocesses (`free`, `awk`, `vmstat`), and background polling daemons.
 
 ---
 
@@ -300,4 +323,3 @@ TQt3 `TQPopupMenu` and `TQIconSet` have specific internal constraints that must 
 | <a href="screenshots/ksnapshotQfdrxg.png"><img src="screenshots/ksnapshotQfdrxg.png" width="230" alt="screenshot 22"></a> | <a href="screenshots/ksnapshotX0R94R.png"><img src="screenshots/ksnapshotX0R94R.png" width="230" alt="screenshot 23"></a> | <a href="screenshots/ksnapshotMhKNVC.png"><img src="screenshots/ksnapshotMhKNVC.png" width="230" alt="screenshot 24"></a> |
 | <a href="screenshots/ksnapshotyHXt4A.png"><img src="screenshots/ksnapshotyHXt4A.png" width="230" alt="screenshot 25"></a> | <a href="screenshots/ksnapshotXnmddV.png"><img src="screenshots/ksnapshotXnmddV.png" width="230" alt="screenshot 26"></a> | <a href="screenshots/ksnapshotsO4OUQ.png"><img src="screenshots/ksnapshotsO4OUQ.png" width="230" alt="screenshot 27"></a> |
 | <a href="screenshots/settings_panel.jpg"><img src="screenshots/settings_panel.jpg" width="230" alt="screenshot 28"></a> | <a href="screenshots/start_menu_embedded.jpg"><img src="screenshots/start_menu_embedded.jpg" width="230" alt="screenshot 29"></a> |   |
-  

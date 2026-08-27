@@ -89,6 +89,7 @@ void clearMenuIconSetCache();
  * Color configuration helper functions for ClassicX Menu
  */
 TQColor getMenuFgColor();
+TQColor getMenuSeparatorColor();
 TQColor getClassicKMenuBgColor();
 TQColor getClassicKMenuSidebarBgColor();
 TQColor getMenuTextBgColor();

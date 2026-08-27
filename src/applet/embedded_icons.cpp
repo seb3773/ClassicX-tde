@@ -7,6 +7,25 @@
 #include <tdeconfig.h>
 #include <tqfile.h>
 #include <tqmap.h>
+#include <zlib.h>
+
+const unsigned char* getUncompressedEmbeddedIconsData()
+{
+    static unsigned char* s_data = 0;
+    if (!s_data) {
+        s_data = new unsigned char[classicx_embedded_icons_uncompressed_size];
+        uLongf destLen = (uLongf)classicx_embedded_icons_uncompressed_size;
+        int res = uncompress(s_data, &destLen,
+                             classicx_embedded_icons_compressed_data,
+                             (uLong)classicx_embedded_icons_compressed_size);
+        if (res != Z_OK) {
+            delete[] s_data;
+            s_data = 0;
+            return 0;
+        }
+    }
+    return s_data;
+}
 
 namespace EmbeddedIcons
 {

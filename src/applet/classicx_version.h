@@ -1,0 +1,6 @@
+#ifndef CLASSICX_VERSION_H
+#define CLASSICX_VERSION_H
+
+#define CLASSICX_VERSION "1.0.4"
+
+#endif // CLASSICX_VERSION_H

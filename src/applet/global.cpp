@@ -498,6 +498,7 @@ static TQColor s_cachedSearchTextColor;
 static TQColor s_cachedTitleFgColor;
 static TQColor s_cachedTitleBgColor;
 static TQColor s_cachedButtonHoverColor;
+static TQColor s_cachedSeparatorColor;
 static int s_cachedFontMode = 0;
 static TQFont s_cachedFont;
 static TQPixmap s_cachedSidebarTile;
@@ -557,6 +558,11 @@ static void ensureColorCache()
         }
     }
 
+    // Precalculate blended separator color (35% fg + 65% bg)
+    s_cachedSeparatorColor = TQColor((s_cachedFgColor.red() * 35 + s_cachedBgColor.red() * 65) / 100,
+                                     (s_cachedFgColor.green() * 35 + s_cachedBgColor.green() * 65) / 100,
+                                     (s_cachedFgColor.blue() * 35 + s_cachedBgColor.blue() * 65) / 100);
+
     config.setGroup("Font");
     s_cachedFontMode = config.readNumEntry("FontMode", 0);
     TQFont sysFont = TDEGlobalSettings::menuFont();
@@ -576,6 +582,12 @@ TQColor getMenuFgColor()
 {
     ensureColorCache();
     return s_cachedFgColor;
+}
+
+TQColor getMenuSeparatorColor()
+{
+    ensureColorCache();
+    return s_cachedSeparatorColor;
 }
 
 TQColor getClassicKMenuBgColor()
@@ -625,7 +637,7 @@ static void colorizeSidebarWorkingImage(TQImage &img, bool invert, bool on, cons
     if (invert)
         EmbeddedIcons::invertImage(img);
     if (on && col.isValid())
-        EmbeddedIcons::colorizeImage(img, col, invert);
+        EmbeddedIcons::colorizeImage(img, col, !invert);
 }
 
 TQPixmap getSidebarTilePixmap(int sidebarWidth, int menuHeight)

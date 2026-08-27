@@ -173,7 +173,27 @@ void padPopupToHeight(TQPopupMenu *menu, const TQIconSet &padIcon,
   }
 }
 
+class ClassicXMenuSeparator : public TQCustomMenuItem {
+public:
+  ClassicXMenuSeparator() {}
+  virtual bool isSeparator() const { return true; }
+  virtual bool fullSpan() const { return true; }
+  virtual TQSize sizeHint() { return TQSize(10, 4); }
+  virtual void paint(TQPainter *p, const TQColorGroup &, bool, bool, int x, int y, int w, int h) {
+    if (!p) return;
+    p->save();
+    p->setPen(KickerLib::getMenuSeparatorColor());
+    int midY = y + h / 2;
+    p->drawLine(x + 2, midY, x + w - 2, midY);
+    p->restore();
+  }
+};
+
 } // namespace
+
+int PanelKMenu::insertSeparator(int index) {
+  return insertItem(new ClassicXMenuSeparator(), -1, index);
+}
 
 PanelKMenu::PanelKMenu()
     : PanelServiceMenu(TQString::null, TQString::null, 0, "KMenu"),
@@ -400,9 +420,9 @@ bool PanelKMenu::loadTopPixmap() {
     }
 
     if (colorize) {
-      EmbeddedIcons::colorizeImage(imgLeft, topColor, invert);
-      EmbeddedIcons::colorizeImage(imgCenter, topColor, invert);
-      EmbeddedIcons::colorizeImage(imgRight, topColor, invert);
+      EmbeddedIcons::colorizeImage(imgLeft, topColor, !invert);
+      EmbeddedIcons::colorizeImage(imgCenter, topColor, !invert);
+      EmbeddedIcons::colorizeImage(imgRight, topColor, !invert);
     }
 
     if (!imgLeft.isNull()) {
@@ -460,11 +480,11 @@ bool PanelKMenu::loadTopPixmap() {
 
     if (colorize) {
       if (!imgLeft.isNull())
-        EmbeddedIcons::colorizeImage(imgLeft, topColor, invert);
+        EmbeddedIcons::colorizeImage(imgLeft, topColor, !invert);
       if (!imgCenter.isNull())
-        EmbeddedIcons::colorizeImage(imgCenter, topColor, invert);
+        EmbeddedIcons::colorizeImage(imgCenter, topColor, !invert);
       if (!imgRight.isNull())
-        EmbeddedIcons::colorizeImage(imgRight, topColor, invert);
+        EmbeddedIcons::colorizeImage(imgRight, topColor, !invert);
     }
 
     if (!imgLeft.isNull()) {

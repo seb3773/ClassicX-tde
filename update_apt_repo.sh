@@ -303,8 +303,8 @@ sudo apt install tde-kicker-classicx-applet</code></pre>
           <p>Start typing anywhere to filter applications instantly. Features typo-tolerant fuzzy suggestions and multilingual accent normalization.</p>
         </div>
         <div class="feature-item">
-          <h3>🎨 20 Built-in Profiles</h3>
-          <p>Instant visual transformations embedded as ultra-compact bytecode (&lt; 2.8 KB). Custom palettes, transparency, and font support.</p>
+          <h3>🎨 23 Built-in Profiles</h3>
+          <p>Instant visual transformations embedded as ultra-compact bytecode (&lt; 3.7 KB). Custom palettes, transparency, and font support.</p>
         </div>
         <div class="feature-item">
           <h3>🖼️ 3-Part Header Banner</h3>

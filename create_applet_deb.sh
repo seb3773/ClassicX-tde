@@ -18,7 +18,7 @@ if [ -n "$VERSION_ARG" ]; then
     DEB_VERSION="${PACKAGE_VERSION}-1"
 else
     BUILD_TIMESTAMP=$(date +%Y%m%d.%H%M%S)
-    PACKAGE_VERSION="1.0.2~build.${BUILD_TIMESTAMP}"
+    PACKAGE_VERSION="1.0.4~build.${BUILD_TIMESTAMP}"
     DEB_VERSION="${PACKAGE_VERSION}"
 fi
 
@@ -31,6 +31,16 @@ DEB_NAME="${PACKAGE_NAME}_${PACKAGE_VERSION}_${ARCH}.deb"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 APPLET_SRC="$SCRIPT_DIR/src/applet"
 BUILD_ROOT="$APPLET_SRC/build"
+
+echo "Updating version header ($PACKAGE_VERSION)..."
+cat <<EOF > "$APPLET_SRC/classicx_version.h"
+#ifndef CLASSICX_VERSION_H
+#define CLASSICX_VERSION_H
+
+#define CLASSICX_VERSION "$PACKAGE_VERSION"
+
+#endif // CLASSICX_VERSION_H
+EOF
 
 if [ -f "$SCRIPT_DIR/convert_images.py" ]; then
     echo "Updating embedded icons..."

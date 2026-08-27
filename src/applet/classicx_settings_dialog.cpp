@@ -5,6 +5,7 @@
 #pragma GCC optimize ("Os")
 
 #include "classicx_settings_dialog.h"
+#include "classicx_version.h"
 
 #include <tqapplication.h>
 #include <tqbuttongroup.h>
@@ -780,6 +781,7 @@ ClassicXSettingsDialog::ClassicXSettingsDialog(TQWidget* parent)
     TQString topPicEmb = config.readEntry("TopPicEmbedded", "Royal");
     m_topPicLeftPath = config.readEntry("TopPicCustomLeft", "");
     m_topPicCenterPath = config.readEntry("TopPicCustomCenter", "");
+    m_topPicRightPath = config.readEntry("TopPicCustomRight", "");
     bool topPicInvert = config.readBoolEntry("TopPicInvert", false);
     bool topPicColorize = config.readBoolEntry("TopPicColorize", false);
 
@@ -3058,6 +3060,16 @@ void ClassicXSettingsDialog::onAboutClicked()
     title->setPaletteForegroundColor(titleCol);
     lay->addWidget(title);
 
+    TQLabel *versionLbl = new TQLabel(TQString("Version %1").arg(CLASSICX_VERSION), &about);
+    TQFont verFont = versionLbl->font();
+    verFont.setBold(false);
+    versionLbl->setFont(verFont);
+    versionLbl->setAlignment(TQt::AlignHCenter);
+    versionLbl->setPaletteBackgroundColor(bgCol);
+    versionLbl->setPaletteForegroundColor(creditCol);
+    lay->addWidget(versionLbl);
+    lay->addSpacing(4);
+
     TQLabel *desc = new TQLabel("A start Menu for Trinity Desktop", &about);
     TQFont descFont = desc->font();
     if (descFont.pointSize() > 0)
@@ -3070,7 +3082,7 @@ void ClassicXSettingsDialog::onAboutClicked()
     desc->setPaletteForegroundColor(titleCol);
     lay->addWidget(desc);
 
-    TQLabel *by = new TQLabel("by seb3737 - https://github.com/seb3773", &about);
+    TQLabel *by = new TQLabel("by seb3773 - https://github.com/seb3773", &about);
     TQFont byFont = by->font();
     byFont.setItalic(true);
     by->setFont(byFont);

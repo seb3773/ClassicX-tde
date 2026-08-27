@@ -77,6 +77,7 @@ public:
     virtual void setMaximumSize(int, int);
     virtual void showMenu();
     virtual bool inFlatSearchMode() const { return m_inFlatSearchMode; }
+    int insertSeparator(int index = -1);
     void clearRecentMenuItems();
     TQPixmap renderMenuSnapshot();
 
