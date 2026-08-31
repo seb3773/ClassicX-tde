@@ -90,12 +90,36 @@ fi
 cat <<EOF > "$BUILD_DIR/DEBIAN/postinst"
 #!/bin/sh
 set -e
+
+# Automatically configure Classic-X APT repository for updates
+if [ -d /etc/apt/sources.list.d ]; then
+    cat << 'REPEOF' > /etc/apt/sources.list.d/classicx.list
+# Classic-X Menu for Trinity Desktop (TDE) APT Repository
+deb [trusted=yes] https://seb3773.github.io/ClassicX-tde/ stable main
+REPEOF
+fi
+
 if [ -x /opt/trinity/bin/tdebuildsycoca ]; then
     /opt/trinity/bin/tdebuildsycoca >/dev/null 2>&1 || true
 fi
 exit 0
 EOF
 chmod 755 "$BUILD_DIR/DEBIAN/postinst"
+
+cat <<EOF > "$BUILD_DIR/DEBIAN/postrm"
+#!/bin/sh
+set -e
+
+if [ "\$1" = "purge" ] || [ "\$1" = "remove" ]; then
+    rm -f /etc/apt/sources.list.d/classicx.list
+fi
+
+if [ -x /opt/trinity/bin/tdebuildsycoca ]; then
+    /opt/trinity/bin/tdebuildsycoca >/dev/null 2>&1 || true
+fi
+exit 0
+EOF
+chmod 755 "$BUILD_DIR/DEBIAN/postrm"
 
 cat <<EOF > "$BUILD_DIR/DEBIAN/control"
 Package: $PACKAGE_NAME
