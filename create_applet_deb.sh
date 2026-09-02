@@ -18,7 +18,7 @@ if [ -n "$VERSION_ARG" ]; then
     DEB_VERSION="${PACKAGE_VERSION}-1"
 else
     BUILD_TIMESTAMP=$(date +%Y%m%d.%H%M%S)
-    PACKAGE_VERSION="1.0.4~build.${BUILD_TIMESTAMP}"
+    PACKAGE_VERSION="1.0.5~build.${BUILD_TIMESTAMP}"
     DEB_VERSION="${PACKAGE_VERSION}"
 fi
 

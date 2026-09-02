@@ -109,7 +109,7 @@ touch "$PAGES_DIR/.nojekyll"
 LATEST_DEB_NAME=$(basename "${DEB_FILES[0]}")
 LATEST_VERSION=$(echo "$LATEST_DEB_NAME" | sed -n 's/.*classicx-applet_\([^_]*\)_.*/\1/p')
 if [ -z "$LATEST_VERSION" ]; then
-    LATEST_VERSION="1.0.4"
+    LATEST_VERSION="1.0.5"
 fi
 
 LATEST_QSI_NAME=""
