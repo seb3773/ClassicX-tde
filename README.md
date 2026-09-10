@@ -287,12 +287,12 @@ TQt3 `TQPopupMenu` and `TQIconSet` have specific internal constraints that must 
 5. **Non-Blocking Display Manager IPC**:
    * Session control (`dmctl.cpp`) uses non-blocking POSIX sockets with `fcntl(O_NONBLOCK)` and bounded `poll()` timeouts (~2000ms), preventing UI lockups if display daemons freeze.
 6. **Zero-Relocation Delta Built-in Profiles Architecture**:
-   * In 64-bit shared modules (`.so`), static struct arrays with string pointers generate hundreds of 24-byte dynamic relocations (`.rela.dyn`). Classic-X encodes all 23 built-in profiles as a contiguous byte stream (`s_profileDeltaBlob[]`), eliminating 100% of relocation overhead.
+   * In 64-bit shared modules (`.so`), static struct arrays with string pointers generate hundreds of 24-byte dynamic relocations (`.rela.dyn`). Classic-X encodes all 30 built-in profiles as a contiguous byte stream (`s_profileDeltaBlob[]`), eliminating 100% of relocation overhead.
    * A 150-byte baseline defines defaults; each profile encodes only differential keys (3-byte RGB colors, 1-2 byte scalars, inline UTF-8).
-   * Inactive options are pruned during build, keeping the entire 23-profile database under **3.7 KB in memory**.
+   * Inactive options are pruned during build, keeping the entire 30-profile database under **5.3 KB in memory**.
 7. **Single-Stream Zlib Asset Pipeline with Chunk Stripping**:
-   * 172 embedded PNG assets are processed by `convert_images.py` to strip non-critical metadata chunks (`tEXt`, `iCCP`, `pHYs`, `bKGD`, `sRGB`).
-   * All assets are concatenated and compressed into a single zlib Deflate stream (Level 9), reducing raw embedded asset size to **~81.5 KB** in `.rodata`.
+   * 201 embedded PNG assets are processed by `convert_images.py` to strip non-critical metadata chunks (`tEXt`, `iCCP`, `pHYs`, `bKGD`, `sRGB`).
+   * All assets are concatenated and compressed into a single zlib Deflate stream (Level 9), reducing raw embedded asset size to **~99.6 KB** in `.rodata`.
    * Lazy decompression decompresses the single block in **~0.2 ms** upon first access, caching the pointer for instant random access by all UI components without per-icon decode overhead.
 8. **Polymorphic Menu Separators & Harmonious Color Blending**:
    * Overcomes TQt3's non-virtual `TQPopupMenu::drawItem` constraint by implementing `ClassicXMenuSeparator` via `TQCustomMenuItem` whose `virtual void paint(...)` is invoked polymorphically by the Qt rendering engine.

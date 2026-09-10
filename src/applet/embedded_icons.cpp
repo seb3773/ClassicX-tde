@@ -8,6 +8,8 @@
 #include <tqfile.h>
 #include <tqmap.h>
 #include <zlib.h>
+#include <vector>
+#include <algorithm>
 
 const unsigned char* getUncompressedEmbeddedIconsData()
 {
@@ -126,6 +128,30 @@ void colorizeImage(TQImage &img, const TQColor &col, bool wasInverted)
     }
 }
 
+struct CaseInsensitiveLess {
+    bool operator()(const TQString &a, const TQString &b) const {
+        TQString la = a.lower();
+        TQString lb = b.lower();
+        if (la != lb) return la < lb;
+        return a < b;
+    }
+};
+
+static void sortCaseInsensitive(TQStringList &list)
+{
+    if (list.count() <= 1) return;
+    std::vector<TQString> vec;
+    vec.reserve(list.count());
+    for (TQStringList::ConstIterator it = list.begin(); it != list.end(); ++it) {
+        vec.push_back(*it);
+    }
+    std::sort(vec.begin(), vec.end(), CaseInsensitiveLess());
+    list.clear();
+    for (size_t i = 0; i < vec.size(); ++i) {
+        list.append(vec[i]);
+    }
+}
+
 TQStringList getStartIconNames()
 {
     TQStringList list;
@@ -134,7 +160,7 @@ TQStringList getStartIconNames()
             list.append(classicx_embedded_icons_registry[i].name());
         }
     }
-    list.sort();
+    sortCaseInsensitive(list);
     return list;
 }
 
@@ -146,7 +172,7 @@ TQStringList getSidebarPatternNames()
             list.append(classicx_embedded_icons_registry[i].name());
         }
     }
-    list.sort();
+    sortCaseInsensitive(list);
     return list;
 }
 
@@ -158,7 +184,7 @@ TQStringList getSidebarPictureNames()
             list.append(classicx_embedded_icons_registry[i].name());
         }
     }
-    list.sort();
+    sortCaseInsensitive(list);
     return list;
 }
 
@@ -179,7 +205,7 @@ TQStringList getTopPixThemeNames()
             }
         }
     }
-    list.sort();
+    sortCaseInsensitive(list);
     return list;
 }
 
@@ -191,7 +217,7 @@ TQStringList getUserPixNames()
             list.append(classicx_embedded_icons_registry[i].name());
         }
     }
-    list.sort();
+    sortCaseInsensitive(list);
     return list;
 }
 

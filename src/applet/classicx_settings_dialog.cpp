@@ -220,6 +220,12 @@ static void setComboByText(TQComboBox* cmb, const TQString& text)
             return;
         }
     }
+    for (int i = 0; i < cmb->count(); ++i) {
+        if (cmb->text(i).lower() == text.lower()) {
+            cmb->setCurrentItem(i);
+            return;
+        }
+    }
 }
 
 static void setComboIndex(TQComboBox* cmb, int idx)
@@ -373,6 +379,23 @@ ClassicXSettingsDialog::ClassicXSettingsDialog(TQWidget* parent)
     hBoxAnimCenter->addWidget(m_chkMenuCentered);
     hBoxAnimCenter->addStretch(1);
     leftCol->addLayout(hBoxAnimCenter);
+
+    TQHBoxLayout *hBoxBottomMargin = new TQHBoxLayout();
+    m_lblBottomMargin = new TQLabel("Bottom margin:", this);
+    m_spinBottomMargin = new TQSpinBox(0, 200, 1, this);
+    m_spinBottomMargin->setSuffix(" px");
+    m_spinBottomMargin->setValue(ClassicXSettings::menuBottomMargin());
+    bool isCentered = m_chkMenuCentered->isChecked();
+    m_lblBottomMargin->setEnabled(isCentered);
+    m_spinBottomMargin->setEnabled(isCentered);
+    connect(m_chkMenuCentered, TQT_SIGNAL(toggled(bool)),
+            m_lblBottomMargin, TQT_SLOT(setEnabled(bool)));
+    connect(m_chkMenuCentered, TQT_SIGNAL(toggled(bool)),
+            m_spinBottomMargin, TQT_SLOT(setEnabled(bool)));
+    hBoxBottomMargin->addWidget(m_lblBottomMargin);
+    hBoxBottomMargin->addWidget(m_spinBottomMargin);
+    hBoxBottomMargin->addStretch(1);
+    leftCol->addLayout(hBoxBottomMargin);
 
     TQHBoxLayout *hBoxMinWidth = new TQHBoxLayout();
     m_lblMenuWidthMode = new TQLabel("Min Width:", this);
@@ -694,6 +717,7 @@ ClassicXSettingsDialog::ClassicXSettingsDialog(TQWidget* parent)
     }
     int embIndex = patternList.findIndex(sbPicEmb);
     if (embIndex >= 0) m_cmbPicEmbedded->setCurrentItem(embIndex);
+    else setComboByText(m_cmbPicEmbedded, sbPicEmb);
     m_sidebarPicSourceStack->addWidget(m_cmbPicEmbedded, 0);
 
     TQWidget *customPicPage = new TQWidget(m_sidebarPicSourceStack);
@@ -2109,8 +2133,11 @@ void ClassicXSettingsDialog::updateSidebarPictureUI()
         int idx = items.findIndex(currentSel);
         if (idx >= 0) {
             m_cmbPicEmbedded->setCurrentItem(idx);
-        } else if (m_cmbPicEmbedded->count() > 0) {
-            m_cmbPicEmbedded->setCurrentItem(0);
+        } else {
+            setComboByText(m_cmbPicEmbedded, currentSel);
+            if (m_cmbPicEmbedded->currentItem() < 0 && m_cmbPicEmbedded->count() > 0) {
+                m_cmbPicEmbedded->setCurrentItem(0);
+            }
         }
     }
 
@@ -2333,6 +2360,9 @@ void ClassicXSettingsDialog::onOkClicked()
     ClassicXSettings::setMenuEntryFormat(selectedFmt);
     ClassicXSettings::setShowAppIcons(m_chkShowAppIcons->isChecked());
     ClassicXSettings::setMenuCentered(m_chkMenuCentered->isChecked());
+    if (m_spinBottomMargin) {
+        ClassicXSettings::setMenuBottomMargin(m_spinBottomMargin->value());
+    }
     int finalMinWidth = (m_cmbMenuWidthMode && m_cmbMenuWidthMode->currentItem() == 1)
                             ? m_spinMenuMinWidth->value()
                             : 0;
@@ -3142,6 +3172,7 @@ void ClassicXSettingsDialog::captureDialogState(TQMap<TQString, TQString>& m) co
 
     if (m_chkAnimateOpening) profilePutBool(m, "AnimateOpening", m_chkAnimateOpening->isChecked());
     if (m_chkMenuCentered) profilePutBool(m, "MenuCentered", m_chkMenuCentered->isChecked());
+    if (m_spinBottomMargin) profilePutNum(m, "MenuBottomMargin", m_spinBottomMargin->value());
     if (m_cmbMenuWidthMode && m_spinMenuMinWidth) {
         int val = (m_cmbMenuWidthMode->currentItem() == 1) ? m_spinMenuMinWidth->value() : 0;
         profilePutNum(m, "MenuMinWidth", val);
@@ -3265,6 +3296,10 @@ void ClassicXSettingsDialog::applyDialogState(const TQMap<TQString, TQString>& m
         m_chkAnimateOpening->setChecked(profileGetBool(m, "AnimateOpening"));
     if (profileHas(m, "MenuCentered") && m_chkMenuCentered)
         m_chkMenuCentered->setChecked(profileGetBool(m, "MenuCentered"));
+    if (m_spinBottomMargin) {
+        int bm = profileHas(m, "MenuBottomMargin") ? profileGetInt(m, "MenuBottomMargin") : 0;
+        m_spinBottomMargin->setValue(bm);
+    }
     if (profileHas(m, "MenuMinWidth") && m_cmbMenuWidthMode && m_spinMenuMinWidth) {
         int val = profileGetInt(m, "MenuMinWidth");
         if (val > 0) {
@@ -3688,6 +3723,7 @@ void ClassicXSettingsDialog::connectProfileDirtyTracking()
 
     connectProfileDirty(m_spinNumRecentApps, TQT_SIGNAL(valueChanged(int)), this);
     connectProfileDirty(m_spinMenuMinWidth, TQT_SIGNAL(valueChanged(int)), this);
+    connectProfileDirty(m_spinBottomMargin, TQT_SIGNAL(valueChanged(int)), this);
     connectProfileDirty(m_spinMaxRecentDocs, TQT_SIGNAL(valueChanged(int)), this);
     connectProfileDirty(m_spinMaxSearchResults, TQT_SIGNAL(valueChanged(int)), this);
     connectProfileDirty(m_spinWidth, TQT_SIGNAL(valueChanged(int)), this);

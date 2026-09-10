@@ -41,7 +41,7 @@ CANONICAL_KEYS = [
     "TopPicCustomRight", "TopPicInvert", "TopPicColorize", "TopPicColor", "TopPicShowText",
     "TopPicShowUser", "TopPicShowCustomText", "TopPicText",
     "TopPicTextColorMode", "TopPicTextColor", "TopPicTextAlign", "TopPicShowRam", "TopPicShowDate", "TopPicShowTime",
-    "AnimateOpening", "MenuMinWidth", "MenuCentered"
+    "AnimateOpening", "MenuMinWidth", "MenuCentered", "MenuBottomMargin"
 ]
 
 KEY_TO_IDX = {k.lower(): i for i, k in enumerate(CANONICAL_KEYS)}
@@ -77,7 +77,7 @@ BASELINE = {
     "toppiccustomright": "", "toppicinvert": "false", "toppiccolorize": "false", "toppiccolor": "#000000", "toppicshowtext": "false",
     "toppicshowuser": "false", "toppicshowcustomtext": "true", "toppictext": "Trinity Desktop",
     "toppictextcolormode": "0", "toppictextcolor": "", "toppictextalign": "0", "toppicshowram": "false", "toppicshowdate": "false", "toppicshowtime": "false",
-    "animateopening": "false", "menuminwidth": "0", "menucentered": "false"
+    "animateopening": "false", "menuminwidth": "0", "menucentered": "false", "menubottommargin": "0"
 }
 
 def encode_value(val):
@@ -222,6 +222,15 @@ def main():
                 d["menuminwidth"] = BASELINE["menuminwidth"]
         except ValueError:
             d["menuminwidth"] = BASELINE["menuminwidth"]
+
+        if d.get("menucentered", "false").lower() != "true":
+            d["menubottommargin"] = BASELINE["menubottommargin"]
+        else:
+            try:
+                if int(d.get("menubottommargin", "0") or 0) <= 0:
+                    d["menubottommargin"] = BASELINE["menubottommargin"]
+            except ValueError:
+                d["menubottommargin"] = BASELINE["menubottommargin"]
 
         deltas = []
         for k, base_val in BASELINE.items():

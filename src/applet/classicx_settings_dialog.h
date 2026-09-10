@@ -138,6 +138,8 @@ private:
     TQCheckBox* m_chkShowAppIcons;
     TQCheckBox* m_chkAnimateOpening;
     TQCheckBox* m_chkMenuCentered;
+    TQLabel*    m_lblBottomMargin;
+    TQSpinBox*  m_spinBottomMargin;
     TQCheckBox* m_chkAlwaysShowSearchBar;
     TQLabel*    m_lblMenuWidthMode;
     TQComboBox* m_cmbMenuWidthMode;

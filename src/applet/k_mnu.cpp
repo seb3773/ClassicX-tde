@@ -638,6 +638,29 @@ void PanelKMenu::resetSidebarPopups() {
   m_inPopulateLogout = false;
 }
 
+void PanelKMenu::closeSidebarPopups() {
+  bool changed = false;
+  if (sessionsMenu && sessionsMenu->isVisible()) {
+    sessionsMenu->hide();
+    changed = true;
+  }
+  if (logoutMenu && logoutMenu->isVisible()) {
+    logoutMenu->hide();
+    changed = true;
+  }
+  if (changed) {
+    m_sidebarPopupHoverTimer->stop();
+    m_pendingHoverBtn = -1;
+    m_blockedHoverBtn = -1;
+    if (m_hoveredSidebarBtn != -1) {
+      m_hoveredSidebarBtn = -1;
+      m_delayedHoverBtn = -1;
+      popupCloseTimer->stop();
+      update(sideImageRect());
+    }
+  }
+}
+
 int PanelKMenu::userShutdownPopupHeight() const {
   int targetH = ClassicXSettings::fullUserShutdownMenuHeight()
                     ? height()
@@ -2091,6 +2114,23 @@ void PanelKMenu::slotShowInTreeDeferred()
 }
 
 void PanelKMenu::mousePressEvent(TQMouseEvent *e) {
+  if (topPixHeight > 0 && e->pos().y() < topPixHeight) {
+    // Close any open submenus (but NOT the main KMenu)
+    int guard = 0;
+    TQWidget *popup = TQApplication::activePopupWidget();
+    while (popup && popup != this && popup != sessionsMenu &&
+           popup != logoutMenu && guard < 10) {
+      popup->hide();
+      popup = TQApplication::activePopupWidget();
+      ++guard;
+    }
+
+    // Close sidebar popups (user menu / shutdown menu)
+    closeSidebarPopups();
+
+    return; // Eat click in top picture area - do nothing and keep menu open
+  }
+
   int sw = sidePixmap.width() > 0 ? sidePixmap.width()
                                   : ClassicXSettings::sideBarWidth();
   int sideXMax = sw + frameWidth() + 4;
@@ -2163,10 +2203,7 @@ void PanelKMenu::mousePressEvent(TQMouseEvent *e) {
           }
           return;
         case 2: // Settings
-          if (sessionsMenu)
-            sessionsMenu->hide();
-          if (logoutMenu)
-            logoutMenu->hide();
+          closeSidebarPopups();
 
           if (e->button() == TQt::RightButton) {
             slotShowClassicXSettings();
@@ -2182,14 +2219,17 @@ void PanelKMenu::mousePressEvent(TQMouseEvent *e) {
           }
           return;
         case 3: // Pictures
+          closeSidebarPopups();
           new KRun(KURL(TDEGlobalSettings::picturesPath()));
           hide();
           return;
         case 4: // Documents
+          closeSidebarPopups();
           new KRun(KURL(TDEGlobalSettings::documentPath()));
           hide();
           return;
         case 5: // Downloads
+          closeSidebarPopups();
           {
             TQString dlPath = TDEGlobalSettings::downloadPath();
             if (dlPath.isEmpty() || !TQDir(dlPath).exists()) {
@@ -2204,20 +2244,30 @@ void PanelKMenu::mousePressEvent(TQMouseEvent *e) {
     }
 
     // Clicked elsewhere in sidebar? Close all sidebar popups
-    if (sessionsMenu)
-      sessionsMenu->hide();
-    if (logoutMenu)
-      logoutMenu->hide();
+    closeSidebarPopups();
 
     return; // eat other clicks in sidebar
   }
+
+  // Clicked in main menu / tree area outside topPix and sidebar
+  closeSidebarPopups();
+
   TQMouseEvent newEvent = translateMouseEvent(e);
   PanelServiceMenu::mousePressEvent(&newEvent);
 }
 
 void PanelKMenu::mouseReleaseEvent(TQMouseEvent *e) {
-  if (sideImageRect().contains(e->pos()))
+  if (topPixHeight > 0 && e->pos().y() < topPixHeight) {
+    return; // Eat release in top picture area - do nothing and keep menu open
+  }
+
+  int sw = sidePixmap.width() > 0 ? sidePixmap.width()
+                                  : ClassicXSettings::sideBarWidth();
+  int sideXMax = sw + frameWidth() + 4;
+  if (ClassicXSettings::useSidePixmap() &&
+      (e->pos().x() <= sideXMax || sideImageRect().contains(e->pos()))) {
     return;
+  }
   TQMouseEvent newEvent = translateMouseEvent(e);
 
   // Title toggles recent/most-used on left click only — do not steal
@@ -2246,6 +2296,20 @@ void PanelKMenu::mouseMoveEvent(TQMouseEvent *e) {
   // Ignore mouse movements during grace period (e.g. after search clear
   // resizing)
   if (blockMouseTimer && blockMouseTimer->isActive()) {
+    return;
+  }
+
+  if (topPixHeight > 0 && e->pos().y() < topPixHeight) {
+    m_sidebarPopupHoverTimer->stop();
+    m_pendingHoverBtn = -1;
+    m_blockedHoverBtn = -1;
+    if (m_hoveredSidebarBtn != -1) {
+      m_hoveredSidebarBtn = -1;
+      m_delayedHoverBtn = -1;
+      popupCloseTimer->stop();
+      update(sideImageRect());
+    }
+    setActiveItem(-1);
     return;
   }
 
@@ -2695,10 +2759,11 @@ static TQPoint placePopupAgainstPanel(TQWidget *popup, ClassicXButton *btn)
 
       int x = screen.left() + (screen.width() - popup->width()) / 2;
       int y;
+      int margin = ClassicXSettings::menuBottomMargin();
       if (btn->popupDirection() == KPanelApplet::Up) {
-        y = panel->y() - popup->height();
+        y = panel->y() - popup->height() - margin;
       } else {
-        y = ag.bottom() - popup->height() + 1;
+        y = ag.bottom() - popup->height() + 1 - margin;
       }
       p = TQPoint(x, y);
     } else {
@@ -3560,7 +3625,17 @@ bool PanelKMenu::eventFilter(TQObject *o, TQEvent *e) {
     }
   }
 
+  if (e && e->type() == TQEvent::MouseButtonPress) {
+    if ((sessionsMenu && sessionsMenu->isVisible()) ||
+        (logoutMenu && logoutMenu->isVisible())) {
+      if (o != sessionsMenu && o != logoutMenu && o != this) {
+        closeSidebarPopups();
+      }
+    }
+  }
+
   if (o == searchEdit && e->type() == TQEvent::FocusIn) {
+    closeSidebarPopups();
     TQFocusEvent *fe = static_cast<TQFocusEvent *>(e);
     // Click/tab into the field: drop the highlighted item. Do not do this
     // on hover focus-restore (Other) — that would emit highlighted(-1)

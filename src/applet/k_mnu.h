@@ -164,6 +164,7 @@ protected:
     void ensureSessionsMenu();
     void ensureLogoutMenu();
     void resetSidebarPopups();
+    void closeSidebarPopups();
     int userShutdownPopupHeight() const;
     void applyUserShutdownPopupSize(TQPopupMenu *menu, int targetH);
 

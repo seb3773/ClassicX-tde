@@ -209,16 +209,17 @@ TQPoint popupPosition(KPanelApplet::Direction d,
 
         int x = screen.left() + (screen.width() - popup->width()) / 2;
         int y;
+        int margin = ClassicXSettings::menuBottomMargin();
 
         if (d == KPanelApplet::Up && source && source->topLevelWidget())
         {
             // Panel is at the bottom: place directly above the panel
-            y = source->topLevelWidget()->y() - popup->height();
+            y = source->topLevelWidget()->y() - popup->height() - margin;
         }
         else
         {
             // Panel is at the top, left, or right: align to bottom of work area
-            y = ag.bottom() - popup->height() + 1;
+            y = ag.bottom() - popup->height() + 1 - margin;
         }
 
         if (x + popup->width() > screen.right() + 1)

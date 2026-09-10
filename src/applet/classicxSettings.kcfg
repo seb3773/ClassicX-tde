@@ -27,6 +27,13 @@
       <default>false</default>
    </entry>
 
+   <entry name="MenuBottomMargin" type="Int" >
+      <label>Bottom margin of the main menu in pixels when centered</label>
+      <default>0</default>
+      <min>0</min>
+      <max>200</max>
+   </entry>
+
 <entry name="ShowControlCenter" type="Bool" >
       <label>Show Trinity Control Center button on sidebar</label>
       <default>true</default>
